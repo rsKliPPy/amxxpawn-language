@@ -32,8 +32,8 @@ export function compile(outputChannel: VSC.OutputChannel) {
 
         let outputPath = '';
         if(compilerSettings.outputType === 'path') {
-            if(!FS.existsSync(outputPath)) {
-                outputChannel.appendLine(`Path ${outputPath} doesn't exist. Compilation aborted.`);
+            if(!FS.existsSync(compilerSettings.outputPath)) {
+                outputChannel.appendLine(`Path ${compilerSettings.outputPath} doesn't exist. Compilation aborted.`);
                 return;
             }
             outputPath = Path.join(compilerSettings.outputPath, Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
