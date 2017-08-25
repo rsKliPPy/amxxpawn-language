@@ -24,9 +24,6 @@ export interface CallableDescriptor {
     // Identifier (without storage specifiers and parameters)
     identifier: string;
 
-    // File in which the callable is defined
-    filePath: string;
-
     // Where in the file is the callable defined
     start: VSCLS.Position;
     end: VSCLS.Position;

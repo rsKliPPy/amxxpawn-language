@@ -35,7 +35,8 @@ connection.onInitialize((params) => {
             definitionProvider: true,
             signatureHelpProvider: {
                 triggerCharacters: ['(', ',']
-            }
+            },
+            documentSymbolProvider: true
         }
     };
 });
@@ -102,6 +103,26 @@ connection.onSignatureHelp((params) => {
 
     const data = documentsData.get(document);
     return Parser.doSignatures(document.getText(), params.position, Helpers.getCallables(data, dependenciesData));
+});
+
+connection.onDocumentSymbol((params) => {
+    console.log('onDocumentSymbol');
+
+    const data = documentsData.get(documentsManager.get(params.textDocument.uri));
+
+    const symbols: VSCLS.SymbolInformation[] = data.callables.map<VSCLS.SymbolInformation>((clb) => ({
+        name: clb.identifier,
+        location: {
+            range: {
+                start: clb.start,
+                end: clb.end
+            },
+            uri: params.textDocument.uri
+        },
+        kind: VSCLS.SymbolKind.Function
+    }));
+
+    return symbols;
 });
 
 documentsManager.onDidOpen((ev) => {

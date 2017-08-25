@@ -209,7 +209,6 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                 results.callables.push({
                     label: matches[0],
                     identifier: matches[3],
-                    filePath: '',
                     start: {
                         line: lineIndex,
                         character: matches.index
