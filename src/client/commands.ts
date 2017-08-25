@@ -67,6 +67,8 @@ export function compile(outputChannel: VSC.OutputChannel) {
         amxxpcProcess.on('close', (exitCode) => {
             outputChannel.appendLine(`\namxxpc exited with code ${exitCode}.`);
         });
+
+        outputChannel.show();
     });
 }
 
