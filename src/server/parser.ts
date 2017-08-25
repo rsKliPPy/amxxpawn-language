@@ -3,7 +3,6 @@
 import * as VSCLS from 'vscode-languageserver';
 import * as StringHelpers from '../common/string-helpers';
 import * as Types from './types';
-import * as DepMng from './dependency-manager';
 
 interface FindFunctionIdentifierResult {
     identifier: string,

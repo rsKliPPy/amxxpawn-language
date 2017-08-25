@@ -28,7 +28,19 @@ export class FileDependencyManager {
         return descriptor.dependency;
     }
 
-    public addDependency(uri: string) {
+    public removeDependency(uri: string) {
+        if(!this._dependencies.has(uri)) {
+            throw new Error('Tried to remove a non-existent dependency.');
+        }
+
+        this._dependencies.delete(uri);
+    }
+
+    public getAllDependencies() {
+        return Array.from(this._dependencies).map((pair) => pair[1].dependency);
+    }
+
+    public addReference(uri: string) {
         if(!this._dependencies.has(uri)) {
             this._dependencies.set(uri, { count: 1, dependency: new FileDependency(uri) });
             return this._dependencies.get(uri).dependency;
@@ -39,9 +51,9 @@ export class FileDependencyManager {
         }
     }
 
-    public removeDependency(uri: string) {
+    public removeReference(uri: string) {
         if(!this._dependencies.has(uri)) {
-            throw new Error('Tried to remove a non-existent dependency.');
+            throw new Error('Tried to remove a reference from a non-existent dependency.');
         }
 
         const dependency = this._dependencies.get(uri);

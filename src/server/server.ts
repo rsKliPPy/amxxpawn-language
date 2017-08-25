@@ -7,14 +7,14 @@ import Uri from 'vscode-uri';
 import * as Settings from '../common/settings-types'; 
 import * as Parser from './parser';
 import * as Types from './types';
-import * as DepMng from './dependency-manager';
+import * as DM from './dependency-manager';
 import * as Helpers from './helpers';
 import {amxxDefaultHeaders} from './amxx-default-headers';
 
 let syncedSettings: Settings.SyncedSettings;
-let dependencyManager: DepMng.FileDependencyManager = new DepMng.FileDependencyManager();
+let dependencyManager: DM.FileDependencyManager = new DM.FileDependencyManager();
 let documentsData: WeakMap<VSCLS.TextDocument, Types.DocumentData> = new WeakMap();
-let dependenciesData: WeakMap<DepMng.FileDependency, Types.DocumentData> = new WeakMap();
+let dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData> = new WeakMap();
 
 /**
  * In future switch to incremental sync
@@ -106,8 +106,6 @@ connection.onSignatureHelp((params) => {
 });
 
 connection.onDocumentSymbol((params) => {
-    console.log('onDocumentSymbol');
-
     const data = documentsData.get(documentsManager.get(params.textDocument.uri));
 
     const symbols: VSCLS.SymbolInformation[] = data.callables.map<VSCLS.SymbolInformation>((clb) => ({
@@ -132,6 +130,8 @@ documentsManager.onDidOpen((ev) => {
 });
 
 documentsManager.onDidClose((ev) => {
+    Helpers.removeDependencies(documentsData.get(ev.document).dependencies, dependencyManager, dependenciesData);
+    Helpers.removeUnreachableDependencies(documentsManager.all().map((doc) => documentsData.get(doc)), dependencyManager, dependenciesData);
     documentsData.delete(ev.document);
 });
 
@@ -164,7 +164,7 @@ function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<s
     const results = Parser.parse(content, isDependency);
     // We are going to list all dependencies here first before we add them to data.dependencies
     // so we can check if any previous dependencies have been removed.
-    const dependencies: DepMng.FileDependency[] = [];
+    const dependencies: DM.FileDependency[] = [];
     data.resolvedInclusions = [];
 
     results.headerInclusions.forEach((header) => {
@@ -177,10 +177,10 @@ function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<s
             let dependency = dependencyManager.getDependency(resolvedUri);
             if(dependency === undefined) {
                 // No other files depend on the included one
-                dependency = dependencyManager.addDependency(resolvedUri);
+                dependency = dependencyManager.addReference(resolvedUri);
             } else if(data.dependencies.indexOf(dependency) < 0) {
                 // The included file already has data, but the parsed file didn't depend on it before
-                dependencyManager.addDependency(dependency.uri);
+                dependencyManager.addReference(dependency.uri);
             }
             dependencies.push(dependency);
 
@@ -218,13 +218,9 @@ function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<s
     });
 
     // Remove all dependencies that have been previously removed from the parsed document
-    // TODO: Walk the dependency tree and properly do this, right now it only removes from
-    // the first level
-    data.dependencies
-        .filter((dep) => dependencies.indexOf(dep) < 0)
-        .forEach((dep) => dependencyManager.removeDependency(dep.uri));
-
+    Helpers.removeDependencies(data.dependencies.filter((dep) => dependencies.indexOf(dep) < 0), dependencyManager, dependenciesData);
     data.dependencies = dependencies;
+
     data.callables = results.callables;
 }
 
@@ -238,5 +234,7 @@ function reparseDocument(document: VSCLS.TextDocument) {
     const diagnostics: Map<string, VSCLS.Diagnostic[]> = new Map();
 
     parseFile(document.getText(), data, diagnostics, false);
+    // Find and remove any dangling nodes in the dependency graph
+    Helpers.removeUnreachableDependencies(documentsManager.all().map((doc) => documentsData.get(doc)), dependencyManager, dependenciesData);
     diagnostics.forEach((ds, uri) => connection.sendDiagnostics({ uri: uri, diagnostics: ds }));
 }

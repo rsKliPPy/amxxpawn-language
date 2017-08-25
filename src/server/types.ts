@@ -1,7 +1,7 @@
 'use strict';
 
 import * as VSCLS from 'vscode-languageserver';
-import * as DepMng from './dependency-manager';
+import * as DM from './dependency-manager';
 
 export interface InclusionDescriptor {
     // The included filename
@@ -47,7 +47,7 @@ export class DocumentData {
     public reparseTimer: NodeJS.Timer;
     public resolvedInclusions: ResolvedInclusion[];
     public callables: CallableDescriptor[];
-    public dependencies: DepMng.FileDependency[];
+    public dependencies: DM.FileDependency[];
 
     constructor(uri: string) {
         this.uri = uri;
