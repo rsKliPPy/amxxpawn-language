@@ -1,3 +1,7 @@
+## [0.1.0] - 2017-08-25
+### Added
+- 'Compile Plugin Local' command which searches for amxxpc executable in input file's path
+
 ## [0.0.5] - 2017-08-25
 ### Fixed
 - Fixed amxxpawn.compiler.outputType === 'path'

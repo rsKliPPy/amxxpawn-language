@@ -39,15 +39,15 @@ export function activate(ctx: VSC.ExtensionContext) {
     const outputChannel = VSC.window.createOutputChannel('AMXXPC Output / AMXXPawn');
     
     const commandCompile = VSC.commands.registerCommand('amxxpawn.compile', Commands.compile.bind(null, outputChannel));
-    const commandRunHalfLife = VSC.commands.registerCommand('amxxpawn.runHalfLife', Commands.runHalfLife.bind(null, outputChannel));
-
+    const commandCompileLocal = VSC.commands.registerCommand('amxxpawn.compileLocal', Commands.compileLocal.bind(null, outputChannel));
+    
     // Push all disposables
     ctx.subscriptions.push(
         languageClient.start(),
 
         // Commands
         commandCompile,
-        commandRunHalfLife,
+        commandCompileLocal,
         
         // Output channels
         VSC.Disposable.from(outputChannel)

@@ -2,7 +2,7 @@
     "name": "amxxpawn-language",
     "displayName": "AMXXPawn Language",
     "description": "AMXXPawn Language Service",
-    "version": "0.0.5",
+    "version": "0.1.0",
     "publisher": "KliPPy",
     "license": "GPL-3.0",
     "author": {
@@ -129,17 +129,12 @@
         "commands": [
             {
                 "command": "amxxpawn.compile",
-                "title": "Compile plugin",
+                "title": "Compile Plugin",
                 "category": "AMXXPawn"
             },
             {
-                "command": "amxxpawn.fullReparse",
-                "title": "Full Reparse",
-                "category": "AMXXPawn"
-            },
-            {
-                "command": "amxxpawn.runHalfLife",
-                "title": "Run Half-Life",
+                "command": "amxxpawn.compileLocal",
+                "title": "Compile Plugin Local",
                 "category": "AMXXPawn"
             }
         ]
