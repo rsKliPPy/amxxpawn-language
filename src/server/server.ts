@@ -36,7 +36,11 @@ connection.onInitialize((params) => {
             signatureHelpProvider: {
                 triggerCharacters: ['(', ',']
             },
-            documentSymbolProvider: true
+            documentSymbolProvider: true,
+            completionProvider: {
+                resolveProvider: false,
+                triggerCharacters: ['(', ',', '=']
+            }
         }
     };
 });
@@ -121,6 +125,19 @@ connection.onDocumentSymbol((params) => {
     }));
 
     return symbols;
+});
+
+connection.onCompletion((params) => {
+    const document = documentsManager.get(params.textDocument.uri);
+    if(document === undefined) {
+        return null;
+    }
+
+    const data = documentsData.get(document);
+    return {
+        isIncomplete: true,
+        items: Parser.doCompletions(document.getText(), params.position, data, dependenciesData)
+    };
 });
 
 documentsManager.onDidOpen((ev) => {

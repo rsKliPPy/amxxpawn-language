@@ -3,6 +3,8 @@
 import * as VSCLS from 'vscode-languageserver';
 import * as StringHelpers from '../common/string-helpers';
 import * as Types from './types';
+import * as Helpers from './helpers';
+import * as DM from './dependency-manager';
 
 interface FindFunctionIdentifierResult {
     identifier: string,
@@ -35,7 +37,6 @@ function findFunctionIdentifier(content: string, cursorIndex: number): FindFunct
     let index = cursorIndex - 1;
     let parenthesisDepth = 0;
     let identifier = '';
-    let parsingIdentifier = false;
     let parameterIndex = 0;
 
     while(index >= 0) {
@@ -80,6 +81,32 @@ function findFunctionIdentifier(content: string, cursorIndex: number): FindFunct
     }
     
     return { identifier: '' };
+}
+
+
+function findIdentifierBehindCursor(content: string, cursorIndex: number): string {
+    let index = cursorIndex - 1;
+    let parenthesisDepth = 0;
+    let identifier = '';
+
+    while(index >= 0) {
+        if(StringHelpers.isAlphaNum(content[index])) {
+            identifier += content[index];
+            --index;
+            continue;
+        } else { // Reached the end of the identifier
+            // Remove all digits from the end, an identifier can't start with a digit
+            let identIndex = identifier.length;
+            while(--identIndex >= 0 && StringHelpers.isDigit(identifier[identIndex])) { }
+            if(identIndex !== identifier.length - 1) {
+                identifier = identifier.substring(0, identIndex + 1);
+            }
+
+            return StringHelpers.reverse(identifier);
+        }
+    }
+
+    return '';
 }
 
 export function parse(content: string, skipStatic: boolean): Types.ParserResults {
@@ -258,4 +285,22 @@ export function doSignatures(content: string, position: VSCLS.Position, callable
             }
         ]
     };
+}
+
+export function doCompletions(content: string, position: VSCLS.Position, data: Types.DocumentData, dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>): VSCLS.CompletionItem[] {
+    const cursorIndex = positionToIndex(content, position);
+    const identifier = findIdentifierBehindCursor(content, cursorIndex);
+
+    let callables: Types.CallableDescriptor[];
+    if(identifier.length === 0) { // Don't allow empty query
+        return null;
+    } else {
+        callables = Helpers.getCallables(data, dependenciesData).filter((clb) => clb.identifier.startsWith(identifier));
+    }
+    
+    return callables.map<VSCLS.CompletionItem>((clb) => ({
+        label: clb.identifier,
+        detail: clb.label,
+        kind: VSCLS.CompletionItemKind.Function
+    }));
 }
