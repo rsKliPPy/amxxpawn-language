@@ -1,0 +1,162 @@
+{
+    "name": "amxxpawn-language",
+    "displayName": "AMXXPawn Language",
+    "description": "AMXXPawn Language Service",
+    "version": "0.0.2",
+    "publisher": "KliPPy",
+    "license": "GPL-3.0",
+    "author": {
+        "name": "KliPPy",
+        "url": "https://forums.alliedmods.net/member.php?u=228599"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/rsKliPPy/amxxpawn-language"
+    },
+    "bugs": {
+        "url": "https://github.com/rsKliPPy/amxxpawn-language/issues"
+    },
+    "keywords": [
+        "amxx",
+        "amxmodx",
+        "pawn",
+        "alliedmodders"
+    ],
+    "engines": {
+        "vscode": "^1.11.0"
+    },
+    "categories": [
+        "Languages",
+        "Linters",
+        "Snippets"
+    ],
+    "activationEvents": [
+        "onLanguage:amxxpawn"
+    ],
+    "main": "./build/client/client",
+    "contributes": {
+        "languages": [
+            {
+                "id": "amxxpawn",
+                "aliases": [
+                    "AMXXPawn",
+                    "amxxpawn",
+                    "AMXX Pawn"
+                ],
+                "extensions": [
+                    ".sma",
+                    ".inc"
+                ],
+                "firstLine": "#include\\s+(<)?\\s+amxmodx(\\s+)?(>)?",
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "amxxpawn",
+                "scopeName": "source.amxxpawn",
+                "path": "./syntaxes/amxxpawn.tmLanguage"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "amxxpawn",
+                "path": "./snippets/amxxpawn.json"
+            }
+        ],
+        "configuration": {
+            "id": "amxxpawn",
+            "type": "object",
+            "title": "AMXXPawn Configuration",
+            "properties": {
+                "amxxpawn.language.reparseInterval": {
+                    "type": "number",
+                    "default": 1500,
+                    "description": "The shortest allowed interval between two syntax re-parses of the same file."
+                },
+                "amxxpawn.language.ensureSemicolon": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Issues an IntelliSense warning if #pragma semicolon is not set."
+                },
+                "amxxpawn.compiler.executablePath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Compiler location."
+                },
+                "amxxpawn.compiler.includePaths": {
+                    "type": "array",
+                    "default": [],
+                    "description": "An array of strings containing include paths for the compiler."
+                },
+                "amxxpawn.compiler.options": {
+                    "type": "array",
+                    "default": [],
+                    "description": "An array of additional options that should be passed to the compiler."
+                },
+                "amxxpawn.compiler.outputType": {
+                    "type": "string",
+                    "default": "source",
+                    "description": "Where should .amxx files be output. Can be:\n  - 'source' (same as input)\n  - 'plugins' (addons/amxmodx/plugins directory, relative to mod directory)\n  - 'path' (specified in amxxpawn.compiler.outputPath setting)",
+                    "enum": [
+                        "source",
+                        "plugins",
+                        "path"
+                    ]
+                },
+                "amxxpawn.compiler.outputPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "If amxx.compiler.outputType is set to 'path', then use this path to output .amxx files."
+                },
+                "amxxpawn.game.executablePath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "hl.exe location. Used for launching the game."
+                },
+                "amxxpawn.game.mod": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Identifier of the mod that should be launched.\nCounter-Strike = cstrike, CS:CZ = czero, Half-Life = valve, etc."
+                },
+                "amxxpawn.game.pluginsIniPath": {
+                    "type": "string",
+                    "default": "addons/amxmodx/configs/plugins.ini",
+                    "description": "plugins.ini path relative to the mod directory."
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "amxxpawn.compile",
+                "title": "Compile plugin",
+                "category": "AMXXPawn"
+            },
+            {
+                "command": "amxxpawn.fullReparse",
+                "title": "Full Reparse",
+                "category": "AMXXPawn"
+            },
+            {
+                "command": "amxxpawn.runHalfLife",
+                "title": "Run Half-Life",
+                "category": "AMXXPawn"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install"
+    },
+    "devDependencies": {
+        "@types/node": "^6.0.40",
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^3.3.0",
+        "vscode-languageserver": "^3.3.0",
+        "vscode-uri": "^1.0.1"
+    }
+}
