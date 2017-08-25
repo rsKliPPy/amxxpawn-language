@@ -16,7 +16,7 @@ const includeRegex = /\#include\s*\<\s*(\w+)\s*\>/;
 // 2 = tag
 // 3 = identifier
 // 4 = parameters
-const callableRegex = /([\w\s]+?)?([A-Za-z_@][\w_@]+:)?\b([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
+const callableRegex = /([\w\s]+?)?([A-Za-z_@][\w_@]+\s*:\s*)?\b([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
 
 
 function positionToIndex(content: string, position: VSCLS.Position) {
