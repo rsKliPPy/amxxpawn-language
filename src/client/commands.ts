@@ -9,6 +9,7 @@ import * as Settings from '../common/settings-types';
 
 export function compile(outputChannel: VSC.OutputChannel) {
     outputChannel.clear();
+    outputChannel.show();
 
     const editor = VSC.window.activeTextEditor;
     if(editor === undefined) {
@@ -25,13 +26,16 @@ export function compile(outputChannel: VSC.OutputChannel) {
 
     FS.access(compilerSettings.executablePath, FS.constants.X_OK, (err) => {
         if(err) {
-            outputChannel.show();
             outputChannel.appendLine('Can\'t access amxxpc. Please check if the path is correct and if you have permissions to execute amxxpc.');
             return;
         }
 
         let outputPath = '';
         if(compilerSettings.outputType === 'path') {
+            if(!FS.existsSync(outputPath)) {
+                outputChannel.appendLine(`Path ${outputPath} doesn't exist. Compilation aborted.`);
+                return;
+            }
             outputPath = Path.join(compilerSettings.outputPath, Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
         } else if(compilerSettings.outputType === 'source') {
             outputPath = Path.join(Path.dirname(inputPath), Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
@@ -67,8 +71,6 @@ export function compile(outputChannel: VSC.OutputChannel) {
         amxxpcProcess.on('close', (exitCode) => {
             outputChannel.appendLine(`\namxxpc exited with code ${exitCode}.`);
         });
-
-        outputChannel.show();
     });
 }
 
