@@ -193,8 +193,10 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                     return;
                 }
 
-                if(skipStatic === true && matches[1].indexOf('static') >= 0) {
-                    return;
+                if(matches[1] !== undefined) {
+                    if(skipStatic === true && matches[1].indexOf('static') >= 0) {
+                        return;
+                    }
                 }
 
                 let params: VSCLS.ParameterInformation[];
