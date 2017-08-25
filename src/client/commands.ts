@@ -32,7 +32,7 @@ export function compile(outputChannel: VSC.OutputChannel) {
 
         let outputPath = '';
         if(compilerSettings.outputType === 'path') {
-            outputPath = compilerSettings.outputPath;
+            outputPath = Path.join(compilerSettings.outputPath, Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
         } else if(compilerSettings.outputType === 'source') {
             outputPath = Path.join(Path.dirname(inputPath), Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
         } else if(compilerSettings.outputType === 'plugins') {
