@@ -5,7 +5,7 @@ import * as Path from 'path';
 import * as CP from 'child_process';
 import * as VSC from 'vscode';
 import * as Settings from '../common/settings-types';
-import * as Helpers from './helpers';
+import * as Helpers from '../common/helpers';
 
 
 function doCompile(executablePath: string, inputPath: string, compilerSettings: Settings.CompilerSettings, outputChannel: VSC.OutputChannel) {

@@ -9,12 +9,14 @@ import * as Parser from './parser';
 import * as Types from './types';
 import * as DM from './dependency-manager';
 import * as Helpers from './helpers';
+import {resolvePathVariables} from '../common/helpers';
 import {amxxDefaultHeaders} from './amxx-default-headers';
 
 let syncedSettings: Settings.SyncedSettings;
 let dependencyManager: DM.FileDependencyManager = new DM.FileDependencyManager();
 let documentsData: WeakMap<VSCLS.TextDocument, Types.DocumentData> = new WeakMap();
 let dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData> = new WeakMap();
+let workspaceRoot: string = '';
 
 /**
  * In future switch to incremental sync
@@ -25,7 +27,9 @@ const documentsManager = new VSCLS.TextDocuments();
 documentsManager.listen(connection);
 connection.listen();
 
-connection.onInitialize((params) => {  
+connection.onInitialize((params) => {
+    workspaceRoot = params.rootUri;
+
     return {
         capabilities: {
             textDocumentSync: documentsManager.syncKind,
@@ -74,7 +78,11 @@ connection.onDocumentLinks((params) => {
 });
 
 connection.onDidChangeConfiguration((params) => {
+    const workspacePath = Uri.parse(workspaceRoot).fsPath;
     syncedSettings = params.settings.amxxpawn as Settings.SyncedSettings;
+    syncedSettings.compiler.includePaths = syncedSettings.compiler.includePaths.map((path) => resolvePathVariables(path, workspacePath, undefined));
+
+    documentsManager.all().forEach(reparseDocument);
 });
 
 connection.onDefinition((params) => {

@@ -2,21 +2,23 @@ import * as Path from 'path';
 import Uri from 'vscode-uri';
 
 
-function substituteVariable(variable: string, workspacePath: string, filePath: string) {
+function substituteVariables(variable: string, workspacePath: string, filePath: string) {
     switch(variable) {
-        case 'workspaceRoot': return workspacePath !== undefined ? workspacePath : '';
-        case 'workspaceRootFolderName': return workspacePath !== undefined ? Path.basename(workspacePath) : '';
+        case 'workspaceRoot': return workspacePath;
+        case 'workspaceRootFolderName': return workspacePath !== undefined ? Path.basename(workspacePath) : undefined;
         case 'file': return filePath;
-        case 'relativeFile': return Path.relative(workspacePath, filePath);
-        case 'fileBasename': return Path.basename(filePath);
+        case 'relativeFile': return filePath !== undefined ? Path.relative(workspacePath, filePath) : undefined;
+        case 'fileBasename': return filePath !== undefined ? Path.basename(filePath) : undefined;
         case 'fileBasenameNoExtension':
+            if(filePath === undefined) return undefined;
+
             const extIndex = filePath.lastIndexOf('.');
             if(extIndex > 0) {
                 return Path.basename(filePath.substring(0, extIndex));
             }
             return Path.basename(filePath);
-        case 'fileDirname': return Path.dirname(filePath);
-        case 'fileExtname': return Path.extname(filePath);
+        case 'fileDirname': return filePath !== undefined ? Path.dirname(filePath) : undefined;
+        case 'fileExtname': return filePath !== undefined ? Path.extname(filePath) : undefined;
         default: return undefined;
     }
 }
@@ -38,7 +40,7 @@ export function resolvePathVariables(path: string, workspacePath: string, filePa
                 return finalPath + path.substring(startIndex);
             }
 
-            const substitution = substituteVariable(path.substring(startIndex + 2, index).trim(), workspacePath, filePath);
+            const substitution = substituteVariables(path.substring(startIndex + 2, index).trim(), workspacePath, filePath);
             if(substitution === undefined) {
                 finalPath += path.substring(startIndex, ++index);
                 continue;

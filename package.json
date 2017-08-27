@@ -2,7 +2,7 @@
     "name": "amxxpawn-language",
     "displayName": "AMXXPawn Language",
     "description": "AMXXPawn Language Service",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "publisher": "KliPPy",
     "license": "GPL-3.0",
     "author": {
@@ -92,10 +92,9 @@
                 "amxxpawn.compiler.outputType": {
                     "type": "string",
                     "default": "source",
-                    "description": "Where should .amxx files be output. Can be:\n  - 'source' (same as input)\n  - 'plugins' (addons/amxmodx/plugins directory, relative to mod directory)\n  - 'path' (specified in amxxpawn.compiler.outputPath setting)",
+                    "description": "Where should .amxx files be output. Can be:\n  - 'source' (same as input)\n  - 'path' (specified in amxxpawn.compiler.outputPath setting)",
                     "enum": [
                         "source",
-                        "plugins",
                         "path"
                     ]
                 },
