@@ -195,7 +195,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                 }
                 --contentIndex;
             }
-            
+
             bracketDepth = 0; // Try to ignore it and continue parsing
             return;
         }
@@ -227,7 +227,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                 let termCharacter: string;
                 let filename = '';
                 
-                lineContent = lineContent.substring(startIndex).trim();
+                lineContent = lineContent.substring(startIndex);
                 while(charIndex !== lineContent.length && StringHelpers.isWhitespace(lineContent[charIndex])) { // Skip whitespace
                     ++charIndex;
                 }
@@ -250,13 +250,24 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                         source: 'amxxpawn',
                         range: {
                             start: { line: lineIndex, character: 0 },
-                            end: { line: lineIndex, character: Number.MAX_VALUE }
+                            end: { line: lineIndex, character: startIndex + charIndex + 1 }
                         }
                     });
+
                     return;
                 }
                 // No more text is allowed after the terminator
                 if(termCharacter !== undefined && charIndex !== lineContent.length - 1) {
+                    results.diagnostics.push({
+                        message: 'No extra characters are allowed after an #include statement',
+                        severity: VSCLS.DiagnosticSeverity.Error,
+                        source: 'amxxpawn',
+                        range: {
+                            start: { line: lineIndex, character: startIndex + charIndex + 1 },
+                            end: { line: lineIndex, character: Number.MAX_VALUE }
+                        }
+                    });
+
                     return;
                 }
                 
@@ -270,7 +281,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                     },
                     end: {
                         line: lineIndex,
-                        character: Number.MAX_VALUE
+                        character: startIndex + charIndex + 1
                     }
                 });
             }
