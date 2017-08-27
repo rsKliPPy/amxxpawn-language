@@ -107,12 +107,41 @@ function findIdentifierBehindCursor(content: string, cursorIndex: number): strin
     return '';
 }
 
+function handleMultilineComments(lineContent: string, inComment: boolean): { content: string, inComment: boolean } {
+    if(inComment === true) {
+        const commentIndex = lineContent.indexOf('*/');
+        if(commentIndex >= 0) {
+            return handleMultilineComments(lineContent.substring(commentIndex + 2), false);
+        }
+    } else {
+        const commentIndex = lineContent.indexOf('/*');
+        if(commentIndex >= 0) {
+            const endCommentIndex = lineContent.indexOf('*/');
+            if(endCommentIndex >= 0) {
+                return handleMultilineComments(lineContent.substring(0, commentIndex) + lineContent.substring(endCommentIndex + 2), false);
+            } else {
+                return handleMultilineComments(lineContent.substring(0, commentIndex), true);
+            }
+        }
+    }
+
+    return { content: lineContent.trim(), inComment: inComment };
+}
+
+function handleComments(lineContent: string, inComment: boolean) {
+    let commentIndex = lineContent.indexOf('//');
+    if(commentIndex >= 0) {
+        lineContent = lineContent.substring(0, commentIndex).trim();
+    }
+
+    return handleMultilineComments(lineContent, inComment);
+}
+
 export function parse(content: string, skipStatic: boolean): Types.ParserResults {
     let results = new Types.ParserResults();
     let bracketDepth = 0; // We are searching only in the global scope
     let bracketIndex: number;
     let commentIndex: number;
-    let foundMultilineComment = false;
     let inComment = false;
 
     let lines = content.split(/\r?\n/);
@@ -122,39 +151,11 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
             return;
         }
 
-        // Handle comments
-        if(inComment === true && (commentIndex = lineContent.indexOf('*/')) >= 0) {
-            lineContent = lineContent.substring(commentIndex + 2).trim();
-            inComment = false;
-            if(lineContent.length === 0) {
-                return;
-            }
-        }
-        if(inComment === true) {
+        const commentsResult = handleComments(lineContent, inComment);
+        lineContent = commentsResult.content;
+        inComment = commentsResult.inComment;
+        if(lineContent.length === 0) {
             return;
-        }
-
-        commentIndex = lineContent.indexOf('/*');
-        if(commentIndex >= 0) {
-            let endCommentIndex = lineContent.indexOf('*/')
-            if(endCommentIndex >= 0) {
-                lineContent = (lineContent.substring(0, commentIndex) + lineContent.substring(endCommentIndex + 2)).trim();
-            } else {
-                lineContent = lineContent.substring(0, commentIndex).trim();
-                inComment = true;
-            }
-            if(lineContent.length === 0) {
-                return;
-            }
-            foundMultilineComment = true;
-        }
-
-        commentIndex = lineContent.indexOf('//');
-        if(commentIndex >= 0) {
-            lineContent = lineContent.substring(0, commentIndex).trim();
-            if(lineContent.length === 0) {
-                return;
-            }
         }
 
         // Handle brackets, we are only parsing the global namespace
@@ -290,11 +291,6 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                     parameters: params
                 });
             }
-        }
-
-        if(foundMultilineComment === true) {
-            foundMultilineComment = false;
-            inComment = true;
         }
     });
 
