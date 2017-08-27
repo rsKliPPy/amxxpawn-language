@@ -1,3 +1,13 @@
+## [Version 0.2.1] - 2017-08-27
+### Added
+- Handle **#tryinclude** statements and underline if can't resolve, but don't produce an error
+- Report unmatched closing braces
+
+### Fixed
+- Properly parse and resolve **#include** statements
+- Properly handle multiple multiline comments on the same line
+- Properly handle multiple braces on the same line
+
 ## [Version 0.2.0] - 2017-08-25
 ### Added
 - Document symbol lookup (`Ctrl+Shift+O`) - Easy way to search and navigate to any symbol in the currently opened document

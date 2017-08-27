@@ -108,6 +108,7 @@ function findIdentifierBehindCursor(content: string, cursorIndex: number): strin
 }
 
 function handleMultilineComments(lineContent: string, inComment: boolean): { content: string, inComment: boolean } {
+    // Maybe this should just be a "copy characters until..." parser
     if(inComment === true) {
         const commentIndex = lineContent.indexOf('*/');
         if(commentIndex >= 0) {
@@ -137,11 +138,23 @@ function handleComments(lineContent: string, inComment: boolean) {
     return handleMultilineComments(lineContent, inComment);
 }
 
+function handleBracketDepth(lineContent: string): number {
+    let bracketDepth = 0;
+    let contentIndex = 0;
+
+    while(contentIndex !== lineContent.length) {
+        if(lineContent[contentIndex] === '{') ++bracketDepth;
+        else if(lineContent[contentIndex] === '}') --bracketDepth;
+        ++contentIndex;
+    }
+
+    return bracketDepth;
+}
+
 export function parse(content: string, skipStatic: boolean): Types.ParserResults {
     let results = new Types.ParserResults();
     let bracketDepth = 0; // We are searching only in the global scope
     let bracketIndex: number;
-    let commentIndex: number;
     let inComment = false;
 
     let lines = content.split(/\r?\n/);
@@ -158,28 +171,32 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
             return;
         }
 
-        // Handle brackets, we are only parsing the global namespace
-        bracketIndex = lineContent.indexOf('}');
-        if(bracketIndex >= 0) {
-            --bracketDepth;
-            // Handle closing and opening brackets on the same line
-            // This should be done recursively in case there is more than
-            // one '} {' pair.
-            if(lineContent.substring(bracketIndex + 1).indexOf('{') >= 0) {
-                ++bracketDepth;
-                return;
-            } else if(bracketIndex === 0) {
-                return;
-            }
-        }
-        bracketIndex = lineContent.indexOf('{');
-        if(bracketIndex >= 0) {
-            ++bracketDepth;
-            if(bracketIndex === 0) {
-                return;
-            }
-        }
+        bracketDepth += handleBracketDepth(lineContent);
         if(bracketDepth > 0) {
+            return;
+        }
+        // Too many closing brackets, find excessive ones and report them
+        if(bracketDepth < 0) {
+            let contentIndex = lineContent.length - 1;
+            while(contentIndex >= 0) {
+                if(lineContent[contentIndex] === '}') ++bracketDepth;
+                if(bracketDepth === 0) {
+                    results.diagnostics.push({
+                        message: 'Unmatched closing brace',
+                        severity: VSCLS.DiagnosticSeverity.Error,
+                        source: 'amxxpawn',
+                        range: {
+                            start: { line: lineIndex, character: contentIndex },
+                            end: { line: lineIndex, character: contentIndex + 1 }
+                        }
+                    });
+
+                    return;
+                }
+                --contentIndex;
+            }
+            
+            bracketDepth = 0; // Try to ignore it and continue parsing
             return;
         }
 
