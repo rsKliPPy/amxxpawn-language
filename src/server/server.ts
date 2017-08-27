@@ -242,7 +242,7 @@ function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<s
         } else {
             myDiagnostics.push({
                 message: `Couldn't resolve include path '${header.filename}'. Check compiler include paths.`,
-                severity: VSCLS.DiagnosticSeverity.Error,
+                severity: header.isSilent ? VSCLS.DiagnosticSeverity.Information : VSCLS.DiagnosticSeverity.Error,
                 source: 'amxxpawn',
                 range: {
                     start: header.start,

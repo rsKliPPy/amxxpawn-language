@@ -240,7 +240,7 @@
         </dict>
         <dict>
             <key>begin</key>
-            <string>^\s*#\s*(include)\b\s+</string>
+            <string>^\s*#\s*((?:try)?include)\b\s+</string>
             <key>captures</key>
             <dict>
                 <key>1</key>
@@ -252,7 +252,7 @@
             <key>end</key>
             <string>(?=(?://|/\*))|$</string>
             <key>name</key>
-            <string>meta.preprocessor.c.include</string>
+            <string>meta.preprocessor.amxxpawn.include</string>
             <key>patterns</key>
             <array>
                 <dict>

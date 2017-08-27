@@ -10,6 +10,9 @@ export interface InclusionDescriptor {
     // This dependency has been included with '#include filename' or '#include "filename"'
     isLocal: boolean;
 
+    // This dependency has been included with '#tryinclude'
+    isSilent: boolean;
+
     // Where in the file is the #include statement
     start: VSCLS.Position;
     end: VSCLS.Position;

@@ -192,9 +192,16 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
 
         // Handle pragmas
         if(lineContent[0] === '#') {
-            // Handle #include
-            if(lineContent.substring(1, 8) === 'include') {
-                if(!StringHelpers.isWhitespace(lineContent[8]) && lineContent[8] !== '"' && lineContent[8] !== '<') {
+            // Handle #include and #tryinclude
+            if(lineContent.substring(1, 8) === 'include' || lineContent.substring(1, 11) === 'tryinclude') {
+                let isSilent = false;
+                let startIndex = 8;
+                if(lineContent.substring(1, 11) === 'tryinclude') {
+                    isSilent = true;
+                    startIndex = 11;
+                }
+
+                if(!StringHelpers.isWhitespace(lineContent[startIndex]) && lineContent[startIndex] !== '"' && lineContent[startIndex] !== '<') {
                     return;
                 }
 
@@ -202,7 +209,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                 let termCharacter: string;
                 let filename = '';
                 
-                lineContent = lineContent.substring(8).trim();
+                lineContent = lineContent.substring(startIndex).trim();
                 while(charIndex !== lineContent.length && StringHelpers.isWhitespace(lineContent[charIndex])) { // Skip whitespace
                     ++charIndex;
                 }
@@ -238,6 +245,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                 results.headerInclusions.push({
                     filename: filename,
                     isLocal: termCharacter !== '>',
+                    isSilent: isSilent,
                     start: {
                         line: lineIndex,
                         character: 0
