@@ -5,7 +5,10 @@ import * as DM from './dependency-manager';
 
 export interface InclusionDescriptor {
     // The included filename
-    headerName: string;
+    filename: string;
+
+    // This dependency has been included with '#include filename' or '#include "filename"'
+    isLocal: boolean;
 
     // Where in the file is the #include statement
     start: VSCLS.Position;
@@ -35,10 +38,12 @@ export interface CallableDescriptor {
 export class ParserResults {
     public headerInclusions: InclusionDescriptor[];
     public callables: CallableDescriptor[];
+    public diagnostics: VSCLS.Diagnostic[];
 
     public constructor() {
         this.headerInclusions = [];
         this.callables = [];
+        this.diagnostics = [];
     }
 };
 

@@ -50,9 +50,13 @@ connection.onDocumentLinks((params) => {
         const links: VSCLS.DocumentLink[] = [];
 
         inclusions.forEach((inclusion) => {
-            if(amxxDefaultHeaders.indexOf(inclusion.headerName) >= 0) {
+            let filename = inclusion.filename;
+            if(filename.substring(filename.length - 4) === '.inc') { // Remove .inc before checking
+                filename = filename.substring(0, filename.length - 4);
+            }
+            if(amxxDefaultHeaders.indexOf(filename) >= 0) {
                 links.push({
-                    target: `https://amxmodx.org/api/${inclusion.headerName}`,
+                    target: `https://amxmodx.org/api/${filename}`,
                     range: {
                         start: inclusion.start,
                         end: inclusion.end
@@ -161,36 +165,55 @@ documentsManager.onDidChangeContent((ev) => {
 });
 
 
-function resolveIncludePath(header: string): string {
+function resolveIncludePath(filename: string, localTo: string): string {
+    const includePaths = [...syncedSettings.compiler.includePaths];
+    // If should check the local path, check it first
+    if(localTo !== undefined) {
+        includePaths.unshift(localTo);
+    }
+
     for(const includePath of syncedSettings.compiler.includePaths) {
-        const path = Path.join(includePath, header + '.inc');
+        let path = Path.join(includePath, filename);
 
         try {
             FS.accessSync(path, FS.constants.R_OK);
             return Uri.file(path).toString();
         } catch(err) {
-            continue;
+            // Append .inc and try again
+            // amxxpc actually tries to append .p and .pawn in addition to .inc, but nobody uses those
+            try {
+                path += '.inc';
+                FS.accessSync(path, FS.constants.R_OK);
+                return Uri.file(path).toString();
+            } catch(err) {
+                continue;
+            }
         }
     }
 
-    return '';
+    return undefined;
 }
 
 // Should probably move this to 'parser.ts'
 function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<string, VSCLS.Diagnostic[]>, isDependency: boolean) {
-    const results = Parser.parse(content, isDependency);
+    let myDiagnostics = [];
+    diagnostics.set(data.uri, myDiagnostics);
     // We are going to list all dependencies here first before we add them to data.dependencies
     // so we can check if any previous dependencies have been removed.
     const dependencies: DM.FileDependency[] = [];
+
+    const results = Parser.parse(content, isDependency);
+    
     data.resolvedInclusions = [];
+    myDiagnostics.push(...results.diagnostics);
 
     results.headerInclusions.forEach((header) => {
-        const resolvedUri = resolveIncludePath(header.headerName);
+        const resolvedUri = resolveIncludePath(header.filename, header.isLocal ? Path.dirname(Uri.parse(data.uri).fsPath) : undefined);
         if(resolvedUri === data.uri) {
             return;
         }
 
-        if(resolvedUri !== '') { // File exists
+        if(resolvedUri !== undefined) { // File exists
             let dependency = dependencyManager.getDependency(resolvedUri);
             if(dependency === undefined) {
                 // No other files depend on the included one
@@ -217,13 +240,8 @@ function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<s
                 descriptor: header
             });
         } else {
-            let myDiagnostics = diagnostics.get(data.uri);
-            if(myDiagnostics === undefined) { // There have been no diagnostics for this file yet
-                myDiagnostics = [];
-                diagnostics.set(data.uri, myDiagnostics);
-            }
             myDiagnostics.push({
-                message: `Couldn't resolve include path '${header.headerName}'. Check compiler include paths.`,
+                message: `Couldn't resolve include path '${header.filename}'. Check compiler include paths.`,
                 severity: VSCLS.DiagnosticSeverity.Error,
                 source: 'amxxpawn',
                 range: {

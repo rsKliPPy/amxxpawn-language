@@ -11,8 +11,6 @@ interface FindFunctionIdentifierResult {
     parameterIndex?: number;
 };
 
-const includeRegex = /\#include\s*\<\s*(\w+)\s*\>/;
-
 // 1 = storage specifiers
 // 2 = tag
 // 3 = identifier
@@ -192,27 +190,65 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
             return;
         }
 
+        // Handle pragmas
         if(lineContent[0] === '#') {
+            // Handle #include
             if(lineContent.substring(1, 8) === 'include') {
-                const matches = lineContent.match(includeRegex);
-                if(!matches) {
+                if(!StringHelpers.isWhitespace(lineContent[8]) && lineContent[8] !== '"' && lineContent[8] !== '<') {
                     return;
                 }
-    
+
+                let charIndex = 0;
+                let termCharacter: string;
+                let filename = '';
+                
+                lineContent = lineContent.substring(8).trim();
+                while(charIndex !== lineContent.length && StringHelpers.isWhitespace(lineContent[charIndex])) { // Skip whitespace
+                    ++charIndex;
+                }
+                if(lineContent[charIndex] === '"' || lineContent[charIndex] === '<') {
+                    termCharacter = (lineContent[charIndex] === '"' ? '"' : '>');
+                    ++charIndex;
+                } else {
+                    termCharacter = undefined; // Termination is the end of the string
+                }
+                // Copy the filename
+                while(lineContent[charIndex] !== termCharacter && charIndex !== lineContent.length) {
+                    filename += lineContent[charIndex++];
+                }
+                filename = filename.trim(); // Trim any surrounding whitespace
+                // Verify if the terminator is correct
+                if((charIndex === lineContent.length && termCharacter !== undefined) || (lineContent[charIndex] !== termCharacter)) {
+                    results.diagnostics.push({
+                        message: 'The #include statement is not terminated properly',
+                        severity: VSCLS.DiagnosticSeverity.Error,
+                        source: 'amxxpawn',
+                        range: {
+                            start: { line: lineIndex, character: 0 },
+                            end: { line: lineIndex, character: Number.MAX_VALUE }
+                        }
+                    });
+                    return;
+                }
+                // No more text is allowed after the terminator
+                if(termCharacter !== undefined && charIndex !== lineContent.length - 1) {
+                    return;
+                }
+                
                 results.headerInclusions.push({
-                    headerName: matches[1],
+                    filename: filename,
+                    isLocal: termCharacter !== '>',
                     start: {
                         line: lineIndex,
                         character: 0
                     },
                     end: {
                         line: lineIndex,
-                        character: matches[0].length
+                        character: Number.MAX_VALUE
                     }
                 });
             }
-        }
-        else {
+        } else { // Handle global scope
             if(lineContent.indexOf('(') >= 0 && lineContent.indexOf(')') >= 0) { // Could be a callable
                 const matches = lineContent.match(callableRegex);
                 if(!matches || matches.index !== 0) { // Has to be at line beginning
