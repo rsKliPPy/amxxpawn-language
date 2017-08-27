@@ -74,11 +74,6 @@
                     "default": 1500,
                     "description": "The shortest allowed interval between two syntax re-parses of the same file."
                 },
-                "amxxpawn.language.ensureSemicolon": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Issues an IntelliSense warning if #pragma semicolon is not set."
-                },
                 "amxxpawn.compiler.executablePath": {
                     "type": "string",
                     "default": "",
@@ -108,21 +103,6 @@
                     "type": "string",
                     "default": "",
                     "description": "If amxx.compiler.outputType is set to 'path', then use this path to output .amxx files."
-                },
-                "amxxpawn.game.executablePath": {
-                    "type": "string",
-                    "default": "",
-                    "description": "hl.exe location. Used for launching the game."
-                },
-                "amxxpawn.game.mod": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Identifier of the mod that should be launched.\nCounter-Strike = cstrike, CS:CZ = czero, Half-Life = valve, etc."
-                },
-                "amxxpawn.game.pluginsIniPath": {
-                    "type": "string",
-                    "default": "addons/amxmodx/configs/plugins.ini",
-                    "description": "plugins.ini path relative to the mod directory."
                 }
             }
         },
