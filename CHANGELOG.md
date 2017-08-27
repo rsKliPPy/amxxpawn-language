@@ -1,3 +1,11 @@
+## [Version 0.3.0] - 2017-08-27
+## Added
+- Substitution variables are now allowed in settings containing paths
+- More diagnostics to the **#include** statement parser
+
+## Fixed
+- **#include** statements parser now provides links and diagnostics with a correct character range
+
 ## [Version 0.2.1] - 2017-08-27
 ### Added
 - Handle **#tryinclude** statements and underline if can't resolve, but don't produce an error
