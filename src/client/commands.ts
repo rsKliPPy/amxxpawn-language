@@ -5,16 +5,18 @@ import * as Path from 'path';
 import * as CP from 'child_process';
 import * as VSC from 'vscode';
 import * as Settings from '../common/settings-types';
+import * as Helpers from './helpers';
 
 
 function doCompile(executablePath: string, inputPath: string, compilerSettings: Settings.CompilerSettings, outputChannel: VSC.OutputChannel) {
     let outputPath = '';
     if(compilerSettings.outputType === 'path') {
-        if(!FS.existsSync(compilerSettings.outputPath)) {
-            outputChannel.appendLine(`Path ${compilerSettings.outputPath} doesn't exist. Compilation aborted.`);
+        outputPath = Helpers.resolvePathVariables(compilerSettings.outputPath, VSC.workspace.rootPath, inputPath) 
+        if(!FS.existsSync(outputPath)) {
+            outputChannel.appendLine(`Path ${outputPath} doesn't exist. Compilation aborted.`);
             return;
         }
-        outputPath = Path.join(compilerSettings.outputPath, Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
+        outputPath = Path.join(outputPath, Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
     } else if(compilerSettings.outputType === 'source') {
         outputPath = Path.join(Path.dirname(inputPath), Path.basename(inputPath, Path.extname(inputPath)) + '.amxx');
     } else if(compilerSettings.outputType === 'plugins') {
@@ -27,12 +29,14 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
     const compilerArgs: string[] = [
         inputPath,
         ...compilerSettings.options,
-        ...compilerSettings.includePaths.map((path) => `-i${path}`),
+        ...compilerSettings.includePaths.map((path) => `-i${Helpers.resolvePathVariables(path, VSC.workspace.rootPath, inputPath)}`),
         `-o${outputPath}`
     ];
     const spawnOptions: CP.SpawnOptions = {
         env: process.env
     };
+
+    outputChannel.appendLine(`Starting amxxpc: ${executablePath} ${compilerArgs.join(' ')}\n`);
 
     const amxxpcProcess = CP.spawn(executablePath, compilerArgs, spawnOptions);
     amxxpcProcess.stdout.on('data', (data) => {
@@ -67,14 +71,15 @@ export function compile(outputChannel: VSC.OutputChannel) {
     const inputPath = editor.document.uri.fsPath;
 
     const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler') as Settings.CompilerSettings;
+    const executablePath = Helpers.resolvePathVariables(compilerSettings.executablePath, VSC.workspace.rootPath, inputPath);
 
-    FS.access(compilerSettings.executablePath, FS.constants.X_OK, (err) => {
+    FS.access(executablePath, FS.constants.X_OK, (err) => {
         if(err) {
             outputChannel.appendLine('Can\'t access amxxpc. Please check if the path is correct and if you have permissions to execute amxxpc.');
             return;
         }
         
-        doCompile(compilerSettings.executablePath, inputPath, compilerSettings, outputChannel);
+        doCompile(executablePath, inputPath, compilerSettings, outputChannel);
     });
 }
 
