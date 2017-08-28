@@ -118,7 +118,7 @@ connection.onSignatureHelp((params) => {
     }
 
     const data = documentsData.get(document);
-    return Parser.doSignatures(document.getText(), params.position, Helpers.getCallables(data, dependenciesData));
+    return Parser.doSignatures(document.getText(), params.position, Helpers.getSymbols(data, dependenciesData).callables);
 });
 
 connection.onDocumentSymbol((params) => {
@@ -265,6 +265,7 @@ function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<s
     data.dependencies = dependencies;
 
     data.callables = results.callables;
+    data.values = results.values;
 }
 
 function reparseDocument(document: VSCLS.TextDocument) {

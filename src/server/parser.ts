@@ -11,6 +11,21 @@ interface FindFunctionIdentifierResult {
     parameterIndex?: number;
 };
 
+interface SpecifierResults {
+    isStatic: boolean;
+    isPublic: boolean;
+    isConst: boolean;
+    isStock: boolean;
+
+    position: number;
+    wrongCombination: boolean;
+};
+
+interface IdentifierResults {
+    token: string;
+    position: number;
+}
+
 // 1 = storage specifiers
 // 2 = tag
 // 3 = identifier
@@ -151,10 +166,145 @@ function handleBracketDepth(lineContent: string): number {
     return bracketDepth;
 }
 
+function readIdentifier(content: string, position: number): IdentifierResults {
+    let token = '';
+    
+    // Skip whitespace first
+    while(position !== content.length && content[position] !== ';' && StringHelpers.isWhitespace(content[position])) {
+        ++position;
+    }
+    if(position === content.length || content[position] === ';') { // Reached the end
+        return { token: '', position: content.length };
+    }
+    // Copy the identifier
+    let checkFunc = StringHelpers.isAlpha;
+    let firstPass = true;
+    while(position !== content.length && content[position] != ';' && checkFunc(content[position])) {
+        token += content[position];
+        ++position;
+
+        if(firstPass === true) {
+            firstPass = false;
+            checkFunc = StringHelpers.isAlphaNum;
+        }
+    }
+    if(content[position] === ';') {
+        return { token: token, position: content.length }; // A little hack when we reach the semicolon
+    }
+
+    return { token: token, position: position };
+}
+
+function readSpecicifers(content: string, position: number, initialToken: string): SpecifierResults {
+    let results = {
+        isStatic: false,
+        isPublic: false,
+        isConst: false,
+        isStock: false,
+
+        position: position,
+        wrongCombination: false
+    };
+
+    switch(initialToken) {
+        case 'static':
+            results.isStatic = true;
+            break;
+        case 'public':
+            results.isPublic = true;
+            break;
+        case 'const':
+            results.isConst = true;
+            break;
+        case 'stock':
+            results.isStock = true;
+    }
+
+    let tr: IdentifierResults = undefined;
+    let previousPosition;
+    do {
+        previousPosition = (tr === undefined ? position : tr.position);
+        tr = readIdentifier(content, previousPosition);
+        switch(tr.token) {
+            case 'static':
+                if(results.isStatic || results.isPublic) {
+                    results.wrongCombination = true;
+                    break;
+                }
+                results.isStatic = true;
+                break;
+            case 'public':
+                if(results.isPublic || results.isStatic) {
+                    results.wrongCombination = true;
+                    break;
+                }
+                results.isPublic = true;
+                break;
+            case 'const':
+                if(results.isConst) {
+                    results.wrongCombination = true;
+                    break;
+                }
+                results.isConst = true;
+                break;
+            case 'stock':
+                if(results.isStock) {
+                    results.wrongCombination = true;
+                    break;
+                }
+                results.isStock = true;
+                break;
+            case 'new':
+                results.wrongCombination = true;
+                break;
+            default:
+                results.position = previousPosition;
+                tr = undefined;
+                break;
+        }
+        // Can't have more specifiers after 'const' if it was the first one
+        if(tr !== undefined && initialToken === 'const') {
+            results.wrongCombination = true;
+        }
+    } while(tr !== undefined && results.wrongCombination !== true);
+
+    if(results.wrongCombination === true) {
+        results.position = tr.position;
+    }
+
+    return results;
+}
+
+function createValueLabel(identifier: string, tag: string, sr: SpecifierResults) {
+    let label = '';
+    let shouldAddNew = true;
+
+    if(sr.isPublic === true) {
+        label += 'public ';
+    }
+    if(sr.isStatic === true) {
+        label += 'static ';
+    }
+    if(sr.isStock === true) {
+        label += 'stock ';
+    }
+    if(sr.isConst === true) {
+        label += 'const ';
+    }
+    if(label === '') {
+        label += 'new ';
+    }
+    if(tag !== '') {
+        label += (tag + ':');
+    }
+    label += identifier;
+
+    return label;
+}
+
 export function parse(content: string, skipStatic: boolean): Types.ParserResults {
     let results = new Types.ParserResults();
     let bracketDepth = 0; // We are searching only in the global scope
-    let bracketIndex: number;
     let inComment = false;
 
     let lines = content.split(/\r?\n/);
@@ -173,6 +323,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
 
         bracketDepth += handleBracketDepth(lineContent);
         if(bracketDepth > 0) {
+            // Handle local scope (no implementation yet)
             return;
         }
         // Too many closing brackets, find excessive ones and report them
@@ -208,7 +359,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
             return;
         }
 
-        // Handle pragmas
+        // Handle preprocessor
         if(lineContent[0] === '#') {
             // Handle #include and #tryinclude
             if(lineContent.substring(1, 8) === 'include' || lineContent.substring(1, 11) === 'tryinclude') {
@@ -318,6 +469,111 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                     },
                     parameters: params
                 });
+            } else {
+                let tr = readIdentifier(lineContent, 0);
+                if(tr.position === lineContent.length) {
+                    return;
+                }
+
+                // Some rules:
+                //  - 'new' - can be only first
+                //  - 'public', 'static' and 'stock' can be in place of 'new'
+                //  -  can't be both 'public' and 'static'
+                //  - 'const' has to be the only specifier if first
+                let sr: SpecifierResults = undefined;
+                switch(tr.token) {
+                    case 'new':
+                    case 'static':
+                    case 'public':
+                    case 'stock':
+                    case 'const':
+                        sr = readSpecicifers(lineContent, tr.position, tr.token);
+                        break;
+                    default: 
+                        return;
+                }
+                if(sr.wrongCombination === true) {
+                    results.diagnostics.push({
+                        message: 'Invalid combination of class specifiers',
+                        severity: VSCLS.DiagnosticSeverity.Error,
+                        source: 'amxxpawn',
+                        range: {
+                            start: { line: lineIndex, character: 0 },
+                            end: { line: lineIndex, character: sr.position }
+                        }
+                    });
+                    return;
+                }
+                if(skipStatic && sr.isStatic) {
+                    return;
+                }
+
+                // Right now I can only support a single symbol declaration unless
+                // I make this really complicated. A true lexer/tokenizer is needed
+                // and that may be done in the future
+                // It would be ideal to check for any known symbols to report redefinition,
+                // but again, a true lexer would be much better for this.
+                tr = readIdentifier(lineContent, sr.position);
+                if(tr.token === '') {
+                    results.diagnostics.push({
+                        message: 'Expected an identifier',
+                        severity: VSCLS.DiagnosticSeverity.Error,
+                        source: 'amxxpawn',
+                        range: {
+                            start: { line: lineIndex, character: sr.position },
+                            end: { line: lineIndex, character: tr.position }
+                        }
+                    });
+                    return;
+                }
+
+                let symbol = tr.token;
+                let symbolTag = '';
+
+                if(tr.position !== lineContent.length) {
+                    // First try to figure out if it's a tag, and if it is read another identifier after the ':'
+                    let contentIndex = tr.position;
+                    // Skip whitespace
+                    while(contentIndex !== lineContent.length && StringHelpers.isWhitespace(lineContent[contentIndex])) {
+                        ++contentIndex;
+                    }
+                    if(lineContent[contentIndex] === ':') {
+                        symbolTag = symbol;
+                        tr = readIdentifier(lineContent, contentIndex + 1);
+                        if(tr.token !== '') {
+                            symbol = tr.token;
+                        } else {
+                            results.diagnostics.push({
+                                message: 'Expected an identifier',
+                                severity: VSCLS.DiagnosticSeverity.Error,
+                                source: 'amxxpawn',
+                                range: {
+                                    start: { line: lineIndex, character: contentIndex + 1 },
+                                    end: { line: lineIndex, character: tr.position }
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // Let's also push everything until ',', ';', '=' or end of string
+                let labelAddition = '';
+                if(tr.position !== lineContent.length) {
+                    let contentIndex = tr.position;
+                    while(contentIndex !== lineContent.length && lineContent[contentIndex] !== ';' && lineContent[contentIndex] !== ',' && lineContent[contentIndex] !== '=') {
+                        labelAddition += lineContent[contentIndex++];
+                    }
+                }
+
+                results.values.push({
+                    identifier: symbol,
+                    label: createValueLabel(symbol, symbolTag, sr) + labelAddition,
+                    isConst: sr.isConst,
+                    range: {
+                        start: { line: lineIndex, character: 0 },
+                        end: { line: lineIndex, character: tr.position }
+                    }
+                });
             }
         }
     });
@@ -355,20 +611,36 @@ export function doSignatures(content: string, position: VSCLS.Position, callable
     };
 }
 
-export function doCompletions(content: string, position: VSCLS.Position, data: Types.DocumentData, dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>): VSCLS.CompletionItem[] {
+export function doCompletions(
+    content: string,
+    position: VSCLS.Position,
+    data: Types.DocumentData,
+    dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>): VSCLS.CompletionItem[] {
+
     const cursorIndex = positionToIndex(content, position);
     const identifier = findIdentifierBehindCursor(content, cursorIndex);
-
+        
     let callables: Types.CallableDescriptor[];
+    let values: Types.ValueDescriptor[];
     if(identifier.length === 0) { // Don't allow empty query
         return null;
     } else {
-        callables = Helpers.getCallables(data, dependenciesData).filter((clb) => clb.identifier.startsWith(identifier));
+        const results = Helpers.getSymbols(data, dependenciesData);
+        values = results.values.filter((val) => val.identifier.startsWith(identifier));
+        callables = results.callables.filter((clb) => clb.identifier.startsWith(identifier));
     }
     
-    return callables.map<VSCLS.CompletionItem>((clb) => ({
+    // '21 as VSCLS.CompletionItemKind'
+    // - At the time of writing LSP doesn't include new item kinds that VSC does
+    // 21 is 'Constant'
+    return values.map<VSCLS.CompletionItem>((val) => ({
+        label: val.identifier,
+        detail: val.label,
+        kind: val.isConst ? 21 as VSCLS.CompletionItemKind : VSCLS.CompletionItemKind.Variable
+    }))
+    .concat(callables.map<VSCLS.CompletionItem>((clb) => ({
         label: clb.identifier,
         detail: clb.label,
         kind: VSCLS.CompletionItemKind.Function
-    }));
+    })));
 }

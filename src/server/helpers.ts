@@ -4,25 +4,36 @@ import * as Types from './types';
 import * as DM from './dependency-manager';
 
 type CallablesWithLocationResults = Map<string, Types.CallableDescriptor[]>;
+export interface SymbolsResults {
+    callables: Types.CallableDescriptor[];
+    values: Types.ValueDescriptor[];
+}
 
-function getCallablesImpl(
+function getSymbolsImpl(
     data: Types.DocumentData,
     dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>,
     visited: Map<DM.FileDependency, boolean>) {
 
-    let callables: Types.CallableDescriptor[] = [...data.callables];
+    let symbols: SymbolsResults = {
+        callables: [...data.callables],
+        values: [...data.values]
+    };
     for(const dep of data.dependencies) {
         if(visited.get(dep) === true) {
             continue;
         }
         visited.set(dep, true);
         const depData = dependenciesData.get(dep);
-        callables = callables.concat(getCallablesImpl(depData, dependenciesData, visited));
+
+        const results = getSymbolsImpl(depData, dependenciesData, visited);
+        symbols.callables = symbols.callables.concat(results.callables);
+        symbols.values = symbols.values.concat(results.values);
     }
 
-    return callables;
+    return symbols;
 }
 
+/*
 function getCallablesWithLocationImpl(
     data: Types.DocumentData,
     dependenciesData: WeakMap<DM.FileDependency,
@@ -39,6 +50,7 @@ function getCallablesWithLocationImpl(
         getCallablesWithLocationImpl(dependenciesData.get(dep), dependenciesData, visited, results);
     }
 }
+*/
 
 function removeDependenciesImpl(
     deps: DM.FileDependency[],
@@ -82,19 +94,20 @@ function getReachableDependencies(
     return reachableDeps;
 }
 
-export function getCallables(
+export function getSymbols(
     data: Types.DocumentData,
-    dependenciesData: WeakMap<DM.FileDependency,
-    Types.DocumentData>): Types.CallableDescriptor[] {
+    dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>): SymbolsResults {
 
-    return getCallablesImpl(data, dependenciesData, new Map());
+    return getSymbolsImpl(data, dependenciesData, new Map());
 }
 
+/*
 export function getCallablesWithLocation(data: Types.DocumentData, dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>) {
     const results: CallablesWithLocationResults = new Map();
     getCallablesWithLocationImpl(data, dependenciesData, new Map(), results);
     return results;
 }
+*/
 
 export function removeDependencies(
     deps: DM.FileDependency[],

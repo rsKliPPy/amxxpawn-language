@@ -38,14 +38,32 @@ export interface CallableDescriptor {
     parameters: VSCLS.ParameterInformation[];
 };
 
+// Awfully bad name but will do. Neither "Variable" nor "Constant" would be
+// good enough, but "Symbol" and "Identifier" are too broad
+export interface ValueDescriptor {
+    // Prototype
+    label: string;
+    
+    // Identifier (without storage specifiers and parameters)
+    identifier: string;
+
+    // Is constant?
+    isConst: boolean;
+
+    // Where is it defined
+    range: VSCLS.Range
+}
+
 export class ParserResults {
     public headerInclusions: InclusionDescriptor[];
     public callables: CallableDescriptor[];
+    public values: ValueDescriptor[];
     public diagnostics: VSCLS.Diagnostic[];
 
     public constructor() {
         this.headerInclusions = [];
         this.callables = [];
+        this.values = [];
         this.diagnostics = [];
     }
 };
@@ -55,6 +73,7 @@ export class DocumentData {
     public reparseTimer: NodeJS.Timer;
     public resolvedInclusions: ResolvedInclusion[];
     public callables: CallableDescriptor[];
+    public values: ValueDescriptor[];
     public dependencies: DM.FileDependency[];
 
     constructor(uri: string) {
@@ -62,6 +81,7 @@ export class DocumentData {
         this.reparseTimer = null; 
         this.resolvedInclusions = [];
         this.callables = [];
+        this.values = [];
         this.dependencies = [];
     }
 };
