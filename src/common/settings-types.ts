@@ -6,14 +6,9 @@ export interface CompilerSettings {
     outputPath: string;
 };
 
-export interface GameSettings {
-    executablePath: string;
-    mod: string;
-    pluginsIniPath: string;
-};
-
 export interface LanguageSettings {
     reparseInterval: number;
+    webApiLinks: boolean;
 };
 
 export interface SyncedSettings {

@@ -72,9 +72,13 @@ connection.onDocumentLinks((params) => {
         return links;
     }
 
-    const data = documentsData.get(documentsManager.get(params.textDocument.uri));
-
-    return inclusionsToLinks(data.resolvedInclusions.map((inclusion) => inclusion.descriptor));
+    if(syncedSettings.language.webApiLinks === true) {
+        const data = documentsData.get(documentsManager.get(params.textDocument.uri));
+        
+        return inclusionsToLinks(data.resolvedInclusions.map((inclusion) => inclusion.descriptor));
+    }
+    
+    return null;
 });
 
 connection.onDidChangeConfiguration((params) => {

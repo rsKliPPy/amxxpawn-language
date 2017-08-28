@@ -74,6 +74,11 @@
                     "default": 1500,
                     "description": "The shortest allowed interval between two syntax re-parses of the same file."
                 },
+                "amxxpawn.language.webApiLinks": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Should #include statements that contain filenames from AMXX package link to the Web API Reference"
+                },
                 "amxxpawn.compiler.executablePath": {
                     "type": "string",
                     "default": "",
