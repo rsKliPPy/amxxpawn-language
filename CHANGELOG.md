@@ -1,3 +1,14 @@
+## [Version 0.4.0] - 2017-08-29
+### Added
+- Suggestions/completions for variables and constants
+- Some diagnostics for variable/constant definitions
+- `amxxpawn.compiler.showInfoMessages` setting - whether compile process shows additional information (arguments, exit code...)
+
+### Fixed
+- `[]` and `()` pairs now highlighted too (only `{}` pairs were before)
+- CWD is now set to amxxpc's directory when running it
+
+
 ## [Version 0.3.1] - 2017-08-27
 ### Added
 - Reparses open documents when configuration changes
