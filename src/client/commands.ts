@@ -37,7 +37,9 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
         cwd: Path.dirname(executablePath)
     };
 
-    outputChannel.appendLine(`Starting amxxpc: ${executablePath} ${compilerArgs.join(' ')}\n`);
+    if(compilerSettings.showInfoMessages === true) {
+        outputChannel.appendLine(`Starting amxxpc: ${executablePath} ${compilerArgs.join(' ')}\n`);
+    }
 
     const amxxpcProcess = CP.spawn(executablePath, compilerArgs, spawnOptions);
     amxxpcProcess.stdout.on('data', (data) => {
@@ -46,14 +48,16 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
     });
     amxxpcProcess.stderr.on('data', (data) => {
         const textData = (data instanceof Buffer) ? data.toString() : data as string;
-        outputChannel.append('amxxpc stderr: ' + data as string);
+        outputChannel.append('stderr: ' + data as string);
     });
     amxxpcProcess.on('error', (err) => {
         outputChannel.appendLine(`Failed to start amxxpc: ${err.message}`);
     });
-    amxxpcProcess.on('close', (exitCode) => {
-        outputChannel.appendLine(`\namxxpc exited with code ${exitCode}.`);
-    });
+    if(compilerSettings.showInfoMessages === true) {
+        amxxpcProcess.on('close', (exitCode) => {
+            outputChannel.appendLine(`\namxxpc exited with code ${exitCode}.`);
+        });
+    }
 }
 
 export function compile(outputChannel: VSC.OutputChannel) {

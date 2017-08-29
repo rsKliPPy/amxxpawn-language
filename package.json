@@ -94,6 +94,11 @@
                     "default": [],
                     "description": "An array of additional options that should be passed to the compiler."
                 },
+                "amxxpawn.compiler.showInfoMessages": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Shows additional information like command arguments and exit code when compiling"
+                },
                 "amxxpawn.compiler.outputType": {
                     "type": "string",
                     "default": "source",

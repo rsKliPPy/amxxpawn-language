@@ -4,6 +4,7 @@ export interface CompilerSettings {
     options: string[];
     outputType: string;
     outputPath: string;
+    showInfoMessages: boolean
 };
 
 export interface LanguageSettings {
