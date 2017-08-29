@@ -33,7 +33,8 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
         `-o${outputPath}`
     ];
     const spawnOptions: CP.SpawnOptions = {
-        env: process.env
+        env: process.env,
+        cwd: Path.dirname(executablePath)
     };
 
     outputChannel.appendLine(`Starting amxxpc: ${executablePath} ${compilerArgs.join(' ')}\n`);
