@@ -641,6 +641,7 @@ export function doCompletions(
     .concat(callables.map<VSCLS.CompletionItem>((clb) => ({
         label: clb.identifier,
         detail: clb.label,
-        kind: VSCLS.CompletionItemKind.Function
+        kind: VSCLS.CompletionItemKind.Function,
+        insertText: clb.identifier + (clb.parameters.length > 0 ? '(' : '()')
     })));
 }
