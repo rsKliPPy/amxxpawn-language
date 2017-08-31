@@ -72,7 +72,7 @@
                 "amxxpawn.language.reparseInterval": {
                     "type": "number",
                     "default": 1500,
-                    "description": "The shortest allowed interval between two syntax re-parses of the same file."
+                    "description": "The shortest allowed interval between two syntax re-parses of the same file"
                 },
                 "amxxpawn.language.webApiLinks": {
                     "type": "boolean",
@@ -82,22 +82,27 @@
                 "amxxpawn.compiler.executablePath": {
                     "type": "string",
                     "default": "",
-                    "description": "Compiler location."
+                    "description": "Compiler location"
                 },
                 "amxxpawn.compiler.includePaths": {
                     "type": "array",
                     "default": [],
-                    "description": "An array of strings containing include paths for the compiler."
+                    "description": "An array of strings containing include paths for the compiler"
                 },
                 "amxxpawn.compiler.options": {
                     "type": "array",
                     "default": [],
-                    "description": "An array of additional options that should be passed to the compiler."
+                    "description": "An array of additional options that should be passed to the compiler"
                 },
                 "amxxpawn.compiler.showInfoMessages": {
                     "type": "boolean",
                     "default": true,
                     "description": "Shows additional information like command arguments and exit code when compiling"
+                },
+                "amxxpawn.compiler.reformatOutput": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Should amxxpc output be reformatted to make it more readable"
                 },
                 "amxxpawn.compiler.outputType": {
                     "type": "string",
@@ -111,7 +116,7 @@
                 "amxxpawn.compiler.outputPath": {
                     "type": "string",
                     "default": "",
-                    "description": "If amxx.compiler.outputType is set to 'path', then use this path to output .amxx files."
+                    "description": "If amxx.compiler.outputType is set to 'path', then use this path to output .amxx files"
                 }
             }
         },
