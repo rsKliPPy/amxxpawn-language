@@ -679,7 +679,7 @@ export function doCompletions(
     dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>): VSCLS.CompletionItem[] {
 
     const cursorIndex = positionToIndex(content, position);
-    const identifier = findIdentifierBehindCursor(content, cursorIndex);
+    const identifier = findIdentifierBehindCursor(content, cursorIndex).toLowerCase();
         
     let callables: Types.CallableDescriptor[];
     let values: Types.ValueDescriptor[];
@@ -687,8 +687,8 @@ export function doCompletions(
         return null;
     } else {
         const results = Helpers.getSymbols(data, dependenciesData);
-        values = results.values.filter((val) => val.identifier.startsWith(identifier));
-        callables = results.callables.filter((clb) => clb.identifier.startsWith(identifier));
+        values = results.values.filter((val) => val.identifier.toLowerCase().startsWith(identifier));
+        callables = results.callables.filter((clb) => clb.identifier.toLowerCase().startsWith(identifier));
     }
     
     // '21 as VSCLS.CompletionItemKind'
