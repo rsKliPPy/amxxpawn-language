@@ -1,3 +1,17 @@
+## [Version 0.5.0] - 2017-08-31
+### Added
+- Syntax highlight for "native" keyword
+- Append `'('` (or `'()'` if function has no arguments) on function autocompletion
+- Hover information when hovering over functions, variables and constants
+- `amxxpawn.compiler.reformatOutput` - reformats compiler output to clear unimportant information and remove clutter
+- Compiler warnings and errors get turned into diagnostics
+
+### Changed
+- Syntax highlight now highlights only known tags from AMXX
+- Completion search is now case-insensitive (e.g: typing `null` now mathces `NULL_VECTOR`)
+- `amxxpawn.language.webApiLinks` and `amxxpawn.compiler.showInfoMessages` settings are now false by default
+
+
 ## [Version 0.4.0] - 2017-08-29
 ### Added
 - Suggestions/completions for variables and constants
