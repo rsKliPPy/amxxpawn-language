@@ -76,7 +76,7 @@
                 },
                 "amxxpawn.language.webApiLinks": {
                     "type": "boolean",
-                    "default": true,
+                    "default": false,
                     "description": "Should #include statements that contain filenames from AMXX package link to the Web API Reference"
                 },
                 "amxxpawn.compiler.executablePath": {
@@ -96,7 +96,7 @@
                 },
                 "amxxpawn.compiler.showInfoMessages": {
                     "type": "boolean",
-                    "default": true,
+                    "default": false,
                     "description": "Shows additional information like command arguments and exit code when compiling"
                 },
                 "amxxpawn.compiler.reformatOutput": {
