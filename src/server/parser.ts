@@ -99,7 +99,6 @@ function findFunctionIdentifier(content: string, cursorIndex: number): FindFunct
 
 function findIdentifierBehindCursor(content: string, cursorIndex: number): string {
     let index = cursorIndex - 1;
-    let parenthesisDepth = 0;
     let identifier = '';
 
     while(index >= 0) {
@@ -120,6 +119,68 @@ function findIdentifierBehindCursor(content: string, cursorIndex: number): strin
     }
 
     return '';
+}
+
+function findIdentifierAtCursor(content: string, cursorIndex: number): { identifier: string, isCallable: boolean } {
+    let result = {
+        identifier: '',
+        isCallable: false
+    };
+
+    if(!StringHelpers.isAlphaNum(content[cursorIndex])) {
+        return result;
+    }
+    // Identifier must begin with alpha
+    if(cursorIndex === 0 && StringHelpers.isDigit(content[cursorIndex])) {
+        return result;
+    }
+    if(cursorIndex > 0 && StringHelpers.isDigit(content[cursorIndex]) && StringHelpers.isWhitespace(content[cursorIndex - 1])) {
+        return result;
+    }
+
+    let index = cursorIndex;
+    // Copy from the left side of cursor
+    while(index >= 0) {
+        if(StringHelpers.isAlphaNum(content[index])) {
+            result.identifier += content[index];
+            --index;
+            continue;
+        } else { // Reached the end of the identifier
+            // Remove all digits from the end, an identifier can't start with a digit
+            let identIndex = result.identifier.length;
+            while(--identIndex >= 0 && StringHelpers.isDigit(result.identifier[identIndex])) { }
+            if(identIndex !== result.identifier.length - 1) {
+                result.identifier = result.identifier.substring(0, identIndex + 1);
+            }
+
+            // Reverse the left part
+            result.identifier = StringHelpers.reverse(result.identifier);
+            break;
+        }
+    }
+    // Copy from the right side of cursor
+    if(cursorIndex !== content.length - 1) {
+        index = cursorIndex + 1;
+        while(index < content.length) {
+            if(StringHelpers.isAlphaNum(content[index])) {
+                result.identifier += content[index];
+                ++index;
+                continue;
+            } else { // Reached the end of the identifier
+                // Try to figure out if it's a callable
+                while(index < content.length && StringHelpers.isWhitespace(content[index])) {
+                    ++index;
+                }
+                if(content[index] === '(') {
+                    result.isCallable = true;
+                }
+                break;
+            }
+        }
+    }
+    
+
+    return result;
 }
 
 function handleMultilineComments(lineContent: string, inComment: boolean): { content: string, inComment: boolean } {
@@ -644,4 +705,53 @@ export function doCompletions(
         kind: VSCLS.CompletionItemKind.Function,
         insertText: clb.identifier + (clb.parameters.length > 0 ? '(' : '()')
     })));
+}
+
+export function doHover(
+    content: string,
+    position: VSCLS.Position,
+    data: Types.DocumentData,
+    dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>): VSCLS.Hover {
+
+    const cursorIndex = positionToIndex(content, position);
+    const result = findIdentifierAtCursor(content, cursorIndex);
+
+    if(result.identifier.length === 0) {
+        return null;
+    }
+
+    const symbols = Helpers.getSymbols(data, dependenciesData);
+    if(result.isCallable) {
+        const index = symbols.callables.map((clb) => clb.identifier).indexOf(result.identifier);
+        if(index < 0) {
+            return null;
+        }
+        const callable = symbols.callables[index];
+        if(position.line === callable.start.line) {
+            return null;
+        }
+
+        return {
+            contents: {
+                language: 'amxxpawn',
+                value: callable.label
+            }
+        };
+    } else {
+        const index = symbols.values.map((val) => val.identifier).indexOf(result.identifier);
+        if(index < 0) {
+            return null;
+        }
+        const value = symbols.values[index];
+        if(position.line === value.range.start.line) {
+            return null;
+        }
+
+        return {
+            contents: {
+                language: 'amxxpawn',
+                value: value.label
+            }
+        };
+    }
 }

@@ -44,7 +44,8 @@ connection.onInitialize((params) => {
             completionProvider: {
                 resolveProvider: false,
                 triggerCharacters: ['(', ',', '=']
-            }
+            },
+            hoverProvider: true
         }
     };
 });
@@ -154,6 +155,16 @@ connection.onCompletion((params) => {
         isIncomplete: true,
         items: Parser.doCompletions(document.getText(), params.position, data, dependenciesData)
     };
+});
+
+connection.onHover((params) => {
+    const document = documentsManager.get(params.textDocument.uri);
+    if(document === undefined) {
+        return null;
+    }
+
+    const data = documentsData.get(document);
+    return Parser.doHover(document.getText(), params.position, data, dependenciesData);
 });
 
 documentsManager.onDidOpen((ev) => {
