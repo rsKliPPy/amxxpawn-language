@@ -42,7 +42,8 @@
         </dict>
         <dict>
             <key>match</key>
-            <string>\b(?!(?:\b(?:case|default)\b))([A-Za-z_$@]\w+\s*:)</string>
+            <!--<string>(?<!case\s)\b([A-Za-z_$@]\w+\s*:)</string>-->
+            <string>\b(?:Float|bool|_|any|LibType|AdminProp|HashType|CvarBounds|floatround_method|anglemode|Handle|Array|Trie|Snapshot|TrieIter|Stack|DataPack|SortMethod|SortType|INIParser|SMCParser|SMCResult|SMCError|HamHook|Ham|HamError|HamItemInfo|CsTeams|CsInternalModel|CsArmorType|MapObjective|TraceResult|KeyValueData|ClientData|EntityState|UserCmd|AlertType)\s*:</string>
             <key>name</key>
             <string>storage.type.amxxpawn</string>
         </dict>
