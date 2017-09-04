@@ -117,7 +117,12 @@
                     "type": "string",
                     "default": "",
                     "description": "If amxx.compiler.outputType is set to 'path', then use this path to output .amxx files"
-                }
+                },
+                "amxxpawn.compiler.switchToOutput": {
+					"type": "boolean",
+					"default": true,
+					"description": "Switch to 'Output' tab on build"
+				}
             }
         },
         "commands": [
