@@ -163,7 +163,13 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
 
 export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: VSC.DiagnosticCollection) {
     outputChannel.clear();
-    outputChannel.show();
+    
+    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler');
+    const switchToOutput = compilerSettings.switchToOutput;
+    if(switchToOutput === true)
+    {
+      outputChannel.show();
+    }
 
     const editor = VSC.window.activeTextEditor;
     if(editor === undefined) {
@@ -175,8 +181,6 @@ export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: 
         return;
     }
     const inputPath = editor.document.uri.fsPath;
-
-    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler') as Settings.CompilerSettings;
     const executablePath = Helpers.resolvePathVariables(compilerSettings.executablePath, VSC.workspace.rootPath, inputPath);
 
     FS.access(executablePath, FS.constants.X_OK, (err) => {
@@ -191,7 +195,13 @@ export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: 
 
 export function compileLocal(outputChannel: VSC.OutputChannel, diagnosticCollection: VSC.DiagnosticCollection) {
     outputChannel.clear();
-    outputChannel.show();
+    
+    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler');
+    const switchToOutput = compilerSettings.switchToOutput;
+    if(switchToOutput === true)
+    {
+      outputChannel.show();
+    }
 
     const editor = VSC.window.activeTextEditor;
     if(editor === undefined) {
@@ -204,7 +214,6 @@ export function compileLocal(outputChannel: VSC.OutputChannel, diagnosticCollect
     }
     const inputPath = editor.document.uri.fsPath;
 
-    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler') as Settings.CompilerSettings;
     const executableDir = Path.dirname(inputPath);
     FS.readdir(executableDir, (err, files) => {
         if(err) {
