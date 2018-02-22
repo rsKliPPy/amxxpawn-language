@@ -687,8 +687,8 @@ export function doCompletions(
         return null;
     } else {
         const results = Helpers.getSymbols(data, dependenciesData);
-        values = results.values.filter((val) => val.identifier.toLowerCase().startsWith(identifier));
-        callables = results.callables.filter((clb) => clb.identifier.toLowerCase().startsWith(identifier));
+        values = results.values.filter((val) => StringHelpers.fuzzy(val.identifier, identifier));
+        callables = results.callables.filter((clb) => StringHelpers.fuzzy(clb.identifier, identifier));
     }
     
     // '21 as VSCLS.CompletionItemKind'
