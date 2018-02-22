@@ -30,7 +30,7 @@ interface IdentifierResults {
 // 2 = tag
 // 3 = identifier
 // 4 = parameters
-const callableRegex = /([\w\s]+?)?([A-Za-z_@][\w_@]+\s*:\s*)?\b([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
+const callableRegex = /([\w\s]+?)?([A-Za-z_@][\w_@]+\s*:\s*)?([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
 
 
 function positionToIndex(content: string, position: VSCLS.Position) {
@@ -697,13 +697,14 @@ export function doCompletions(
     return values.map<VSCLS.CompletionItem>((val) => ({
         label: val.identifier,
         detail: val.label,
-        kind: val.isConst ? 21 as VSCLS.CompletionItemKind : VSCLS.CompletionItemKind.Variable
+        kind: val.isConst ? 21 as VSCLS.CompletionItemKind : VSCLS.CompletionItemKind.Variable,
+        insertText: val.identifier[0] === '@' ? val.identifier.substr(1) : val.identifier
     }))
     .concat(callables.map<VSCLS.CompletionItem>((clb) => ({
         label: clb.identifier,
         detail: clb.label,
         kind: VSCLS.CompletionItemKind.Function,
-        insertText: clb.identifier
+        insertText: clb.identifier[0] === '@' ? clb.identifier.substr(1) : clb.identifier
     })));
 }
 

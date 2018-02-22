@@ -43,7 +43,7 @@ connection.onInitialize((params) => {
             documentSymbolProvider: true,
             completionProvider: {
                 resolveProvider: false,
-                triggerCharacters: ['(', ',', '=']
+                triggerCharacters: ['(', ',', '=', '@']
             },
             hoverProvider: true
         }
