@@ -1,3 +1,18 @@
+## [Version 0.6.0] - 2018-02-22
+### Added
+- Syntax highlight for "forward" keyword
+- Fuzzy search for completions
+
+### Changed
+- Doesn't append `'('` and `'()'` on function autocompletions anymore
+- Sytax highlight improvements
+- `'^'` is now the string escape character
+
+### Fixed
+- Symbols starting with `'@'` weren't being parsed
+- Included files that are local to the source file weren't being resolved correctly
+
+
 ## [Version 0.5.0] - 2017-08-31
 ### Added
 - Syntax highlight for "native" keyword
