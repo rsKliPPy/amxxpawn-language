@@ -4,7 +4,7 @@ export function isAlpha(character: string) {
     return /[A-Za-z_@]/.test(character);
 }
 export function isAlphaNum(character: string) {
-    return /[\w_@]/.test(character);
+    return /[\w@]/.test(character);
 }
 export function isDigit(character: string) {
     return /\d/.test(character);
