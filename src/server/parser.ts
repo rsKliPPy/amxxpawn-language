@@ -703,7 +703,7 @@ export function doCompletions(
         label: clb.identifier,
         detail: clb.label,
         kind: VSCLS.CompletionItemKind.Function,
-        insertText: clb.identifier + (clb.parameters.length > 0 ? '(' : '()')
+        insertText: clb.identifier
     })));
 }
 

@@ -32,7 +32,7 @@ export function activate(ctx: VSC.ExtensionContext) {
                 'amxxpawn.language',
                 'amxxpawn.compiler'
             ],
-            fileEvents: VSC.workspace.createFileSystemWatcher('**/.clientrc')
+            fileEvents: VSC.workspace.createFileSystemWatcher('**/*.*')
         }
     };
 
