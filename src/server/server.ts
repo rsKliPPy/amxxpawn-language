@@ -195,7 +195,7 @@ function resolveIncludePath(filename: string, localTo: string): string {
         includePaths.unshift(localTo);
     }
 
-    for(const includePath of syncedSettings.compiler.includePaths) {
+    for(const includePath of includePaths) {
         let path = Path.join(includePath, filename);
 
         try {
