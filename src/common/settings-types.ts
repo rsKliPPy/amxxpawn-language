@@ -6,6 +6,7 @@ export interface CompilerSettings {
     outputPath: string;
     showInfoMessages: boolean;
     reformatOutput: boolean;
+    switchToOutput: boolean;
 };
 
 export interface LanguageSettings {

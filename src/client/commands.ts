@@ -164,11 +164,9 @@ function doCompile(executablePath: string, inputPath: string, compilerSettings: 
 export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: VSC.DiagnosticCollection) {
     outputChannel.clear();
     
-    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler');
-    const switchToOutput = compilerSettings.switchToOutput;
-    if(switchToOutput === true)
-    {
-      outputChannel.show();
+    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler') as Settings.CompilerSettings;
+    if(compilerSettings.switchToOutput === true) {
+        outputChannel.show();
     }
 
     const editor = VSC.window.activeTextEditor;
@@ -196,11 +194,9 @@ export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: 
 export function compileLocal(outputChannel: VSC.OutputChannel, diagnosticCollection: VSC.DiagnosticCollection) {
     outputChannel.clear();
     
-    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler');
-    const switchToOutput = compilerSettings.switchToOutput;
-    if(switchToOutput === true)
-    {
-      outputChannel.show();
+    const compilerSettings = VSC.workspace.getConfiguration('amxxpawn').get('compiler') as Settings.CompilerSettings;
+    if(compilerSettings.switchToOutput === true) {
+        outputChannel.show();
     }
 
     const editor = VSC.window.activeTextEditor;
