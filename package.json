@@ -47,7 +47,7 @@
                     ".sma",
                     ".inc"
                 ],
-                "firstLine": "#include\\s+(<)?\\s+amxmodx(\\s+)?(>)?",
+                "firstLine": "#include\\s+[<\"]?\\s*amxmodx\\s*[>\"]?",
                 "configuration": "./language-configuration.json"
             }
         ],
