@@ -5,6 +5,7 @@ import * as StringHelpers from '../common/string-helpers';
 import * as Types from './types';
 import * as Helpers from './helpers';
 import * as DM from './dependency-manager';
+import Uri from 'vscode-uri';
 
 interface FindFunctionIdentifierResult {
     identifier: string,
@@ -363,7 +364,7 @@ function createValueLabel(identifier: string, tag: string, sr: SpecifierResults)
     return label;
 }
 
-export function parse(content: string, skipStatic: boolean): Types.ParserResults {
+export function parse(fileUri: Uri, content: string, skipStatic: boolean): Types.ParserResults {
     let results = new Types.ParserResults();
     let bracketDepth = 0; // We are searching only in the global scope
     let inComment = false;
@@ -520,6 +521,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                 results.callables.push({
                     label: matches[0],
                     identifier: matches[3],
+                    file: fileUri,
                     start: {
                         line: lineIndex,
                         character: matches.index
@@ -630,6 +632,7 @@ export function parse(content: string, skipStatic: boolean): Types.ParserResults
                     identifier: symbol,
                     label: createValueLabel(symbol, symbolTag, sr) + labelAddition,
                     isConst: sr.isConst,
+                    file: fileUri,
                     range: {
                         start: { line: lineIndex, character: 0 },
                         end: { line: lineIndex, character: tr.position }
@@ -754,5 +757,41 @@ export function doHover(
                 value: value.label
             }
         };
+    }
+}
+
+export function doDefinition(
+    content: string,
+    position: VSCLS.Position,
+    data: Types.DocumentData,
+    dependenciesData: WeakMap<DM.FileDependency, Types.DocumentData>): VSCLS.Location {
+
+    const cursorIndex = positionToIndex(content, position);
+    const result = findIdentifierAtCursor(content, cursorIndex);
+
+    if(result.identifier.length === 0) {
+        return null;
+    }
+
+    const symbols = Helpers.getSymbols(data, dependenciesData);
+    if(result.isCallable) {
+        const index = symbols.callables.map((clb) => clb.identifier).indexOf(result.identifier);
+        if(index < 0) {
+            return null;
+        }
+        const callable = symbols.callables[index];
+
+        return VSCLS.Location.create(callable.file.toString(), VSCLS.Range.create(callable.start, callable.end));
+    } else {
+        const index = symbols.values.map((val) => val.identifier).indexOf(result.identifier);
+        if(index < 0) {
+            return null;
+        }
+        const value = symbols.values[index];
+        if(position.line === value.range.start.line) {
+            return null;
+        }
+
+        return VSCLS.Location.create(value.file.toString(), value.range);
     }
 }

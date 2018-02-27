@@ -2,6 +2,7 @@
 
 import * as VSCLS from 'vscode-languageserver';
 import * as DM from './dependency-manager';
+import Uri from 'vscode-uri';
 
 export interface InclusionDescriptor {
     // The included filename
@@ -31,6 +32,8 @@ export interface CallableDescriptor {
     identifier: string;
 
     // Where in the file is the callable defined
+    // TODO: Make this VSCLS.Location
+    file: Uri;
     start: VSCLS.Position;
     end: VSCLS.Position;
 
@@ -51,7 +54,9 @@ export interface ValueDescriptor {
     isConst: boolean;
 
     // Where is it defined
-    range: VSCLS.Range
+    // TODO: Make this VSCLS.Locaton
+    file: Uri;
+    range: VSCLS.Range;
 }
 
 export class ParserResults {

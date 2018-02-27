@@ -113,7 +113,10 @@ connection.onDefinition((params) => {
     }
 
     const data = documentsData.get(document);
-    return inclusionLocation(data.resolvedInclusions);
+    const location = inclusionLocation(data.resolvedInclusions);
+    if(location === null) { // Try callables/values
+        return Parser.doDefinition(document.getText(), params.position, data, dependenciesData);
+    }
 });
 
 connection.onSignatureHelp((params) => {
@@ -218,14 +221,14 @@ function resolveIncludePath(filename: string, localTo: string): string {
 }
 
 // Should probably move this to 'parser.ts'
-function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<string, VSCLS.Diagnostic[]>, isDependency: boolean) {
+function parseFile(fileUri: Uri, content: string, data: Types.DocumentData, diagnostics: Map<string, VSCLS.Diagnostic[]>, isDependency: boolean) {
     let myDiagnostics = [];
     diagnostics.set(data.uri, myDiagnostics);
     // We are going to list all dependencies here first before we add them to data.dependencies
     // so we can check if any previous dependencies have been removed.
     const dependencies: DM.FileDependency[] = [];
 
-    const results = Parser.parse(content, isDependency);
+    const results = Parser.parse(fileUri, content, isDependency);
     
     data.resolvedInclusions = [];
     myDiagnostics.push(...results.diagnostics);
@@ -255,7 +258,7 @@ function parseFile(content: string, data: Types.DocumentData, diagnostics: Map<s
                 // This should probably be made asynchronous in the future as it probably
                 // blocks the event loop for a considerable amount of time.
                 const content = FS.readFileSync(Uri.parse(dependency.uri).fsPath).toString();
-                parseFile(content, depData, diagnostics, true);
+                parseFile(Uri.parse(dependency.uri), content, depData, diagnostics, true);
             }
 
             data.resolvedInclusions.push({
@@ -292,7 +295,7 @@ function reparseDocument(document: VSCLS.TextDocument) {
 
     const diagnostics: Map<string, VSCLS.Diagnostic[]> = new Map();
 
-    parseFile(document.getText(), data, diagnostics, false);
+    parseFile(Uri.parse(document.uri), document.getText(), data, diagnostics, false);
     // Find and remove any dangling nodes in the dependency graph
     Helpers.removeUnreachableDependencies(documentsManager.all().map((doc) => documentsData.get(doc)), dependencyManager, dependenciesData);
     diagnostics.forEach((ds, uri) => connection.sendDiagnostics({ uri: uri, diagnostics: ds }));
