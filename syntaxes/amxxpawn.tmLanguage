@@ -36,16 +36,45 @@
         </dict>
         <dict>
             <key>match</key>
-            <string>\b(break|case|continue|default|do|else|for|goto|if|return|switch|while)\b</string>
-            <key>name</key>
-            <string>keyword.control.amxxpawn</string>
+            <string>(?x)
+                (default)\s*:|                                          #ignore "default:"
+                \?(?!.*\().*?(?'ident'[A-Za-z_@][A-Za-z0-9_@]*+)\s*:|   #ignore "? identifier :"
+                (case)\s+(\g'ident')\s*:|                               #ignore "case identifier:"
+                :\s*\g'ident'\s*|                                       #ignore ":identifier:"
+                (
+                    {(?:\s*\g'ident'\s*(?:\,)?)+}\s*:|                  #a list of tags or
+                    \b\g'ident'\s*:                                     #a single tag
+                )
+            </string>
+            <key>captures</key>
+            <dict>
+                <key>1</key>
+                <dict>
+                    <key>name</key>
+                    <string>keyword.control.amxxpawn</string>
+                </dict>
+                <key>3</key>
+                <dict>
+                    <key>name</key>
+                    <string>keyword.control.amxxpawn</string>
+                </dict>
+                <key>4</key>
+                <dict>
+                    <key>name</key>
+                    <string>constant.other.amxxpawn</string>
+                </dict>
+                <key>5</key>
+                <dict>
+                    <key>name</key>
+                    <string>storage.type.amxxpawn</string>
+                </dict>
+            </dict>
         </dict>
         <dict>
             <key>match</key>
-            <!--<string>(?<!case\s)\b([A-Za-z_$@]\w+\s*:)</string>-->
-            <string>\b(?:Float|bool|_|any|LibType|AdminProp|HashType|CvarBounds|floatround_method|anglemode|Handle|Array|Trie|Snapshot|TrieIter|Stack|DataPack|SortMethod|SortType|INIParser|SMCParser|SMCResult|SMCError|HamHook|Ham|HamError|HamItemInfo|CsTeams|CsInternalModel|CsArmorType|MapObjective|TraceResult|KeyValueData|ClientData|EntityState|UserCmd|AlertType)\s*:</string>
+            <string>\b(break|case|continue|default|do|else|for|goto|if|return|switch|while)\b</string>
             <key>name</key>
-            <string>storage.type.amxxpawn</string>
+            <string>keyword.control.amxxpawn</string>
         </dict>
         <dict>
             <key>match</key>
@@ -501,7 +530,7 @@
                  )
             )
             (
-                (?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++    |              # actual name
+                (?: [A-Za-z_][A-Za-z0-9_]*+ )++    |              # actual name
                 (?: (?&lt;=operator) (?: [-*&amp;&lt;&gt;=+!]+ | \(\) | \[\] ) )?  # if it is a C++ operator
             )
              \s*(\()</string>
