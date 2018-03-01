@@ -54,6 +54,14 @@
                 ],
                 "firstLine": "#include\\s+[<\"]?\\s*amxmodx\\s*[>\"]?",
                 "configuration": "./language-configuration.json"
+            },
+            {
+                "id": "pawndoc",
+                "aliases": [
+                    "PAWNDoc",
+                    "PAWN-Doc",
+                    "PAWN Doc"
+                ]
             }
         ],
         "grammars": [
@@ -61,6 +69,14 @@
                 "language": "amxxpawn",
                 "scopeName": "source.amxxpawn",
                 "path": "./syntaxes/amxxpawn.tmLanguage"
+            },
+            {
+                "language": "pawndoc",
+                "scopeName": "text.pawndoc",
+                "path": "./syntaxes/pawndoc.json",
+                "injectTo": [
+                    "amxxpawn"
+                ]
             }
         ],
         "snippets": [

@@ -1,0 +1,42 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "PAWN-Doc",
+    "scopeName": "text.pawndoc",
+    "patterns": [
+        {
+            "begin": "(@(?:return|noreturn|note|error))|(@deprecated)|(@param)\\s+([A-Za-z_@][A-Za-z0-9_@]*+)",
+            "end": "^\\s*(?=\\*\\s*(?:@|$))|.*(?=\\*/)",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control"
+                },
+                "2": {
+                    "name": "invalid.deprecated"
+                },
+                "3": {
+                    "name": "keyword.control"
+                },
+                "4": {
+                    "name": "variable.name"
+                }
+            },
+            "contentName": "meta.description"
+        },
+        {
+            "begin": "\/\\*\\*[\\s\\*]+",
+            "end": "^\\s*(?=\\*\\s*(?:@|$))|.*(?=\\*/)",
+            "contentName": "meta.description.brief",
+            "patterns": [
+                {
+                    "match": "^\\s*\\*|(.+)",
+                    "captures":{
+                        "1": {
+                            "name": "variable.name"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "uuid": "0f8c18af-46d1-4fc1-a7e9-532444107060"
+}

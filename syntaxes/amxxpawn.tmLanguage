@@ -567,6 +567,29 @@
                 </dict>
                 <dict>
                     <key>begin</key>
+                    <string>(^|.)(?=/\*\*)</string>
+                    <key>captures</key>
+                    <dict>
+                        <key>0</key>
+                        <dict>
+                            <key>name</key>
+                            <string>punctuation.definition.comment.amxxpawn</string>
+                        </dict>
+                    </dict>
+                    <key>end</key>
+                    <string>(?<=\*/)(.|$)</string>
+                    <key>name</key>
+                    <string>comment.block.doc.amxxpawn</string>
+                    <key>patterns</key>
+                    <array>
+                        <dict>
+                            <key>include</key>
+                            <string>text.pawndoc</string>
+                        </dict>
+                    </array>
+                </dict>
+                <dict>
+                    <key>begin</key>
                     <string>/\*</string>
                     <key>captures</key>
                     <dict>
