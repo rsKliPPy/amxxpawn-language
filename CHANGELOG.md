@@ -1,3 +1,11 @@
+## [Version 0.6.3] - 2018-02-23
+### Added
+- Marketplace icon and banner
+- `//#region` and `//#endregion`
+
+## Fixed
+- Automatically switches to AMXXPawn if there's `#include <amxmodx>` on the first code line
+
 ## [Version 0.6.0] - 2018-02-22
 ### Added
 - Syntax highlight for "forward" keyword
