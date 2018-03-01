@@ -1,3 +1,13 @@
+## [Version 0.7.0] - 2018-03-01
+### Added
+- Go to Definition/Peek Definition for functions and global variables
+- All tags are now highlighted, not just predefined ones
+- Tag lists are now highlighted
+- Tag highlighting works properly in ternary operators
+- Doc-comments are now displayed on signature help/hover/completions
+- Pawndoc grammar - doc-comments are highlighted separately
+
+
 ## [Version 0.6.3] - 2018-02-23
 ### Added
 - Marketplace icon and banner
@@ -5,6 +15,7 @@
 
 ## Fixed
 - Automatically switches to AMXXPawn if there's `#include <amxmodx>` on the first code line
+
 
 ## [Version 0.6.0] - 2018-02-22
 ### Added
