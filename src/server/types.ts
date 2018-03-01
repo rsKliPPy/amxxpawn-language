@@ -39,6 +39,8 @@ export interface CallableDescriptor {
 
     // Parameter informations
     parameters: VSCLS.ParameterInformation[];
+
+    documentaton: string;
 };
 
 // Awfully bad name but will do. Neither "Variable" nor "Constant" would be
@@ -57,6 +59,8 @@ export interface ValueDescriptor {
     // TODO: Make this VSCLS.Locaton
     file: Uri;
     range: VSCLS.Range;
+
+    documentaton: string;
 }
 
 export class ParserResults {

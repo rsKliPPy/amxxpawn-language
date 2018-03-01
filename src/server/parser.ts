@@ -33,6 +33,8 @@ interface IdentifierResults {
 // 4 = parameters
 const callableRegex = /([\w\s]+?)?([A-Za-z_@][\w_@]+\s*:\s*)?([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
 
+let docComment = "";
+
 
 function positionToIndex(content: string, position: VSCLS.Position) {
     let line = 0;
@@ -187,18 +189,24 @@ function findIdentifierAtCursor(content: string, cursorIndex: number): { identif
 function handleMultilineComments(lineContent: string, inComment: boolean): { content: string, inComment: boolean } {
     // Maybe this should just be a "copy characters until..." parser
     if(inComment === true) {
-        const commentIndex = lineContent.indexOf('*/');
-        if(commentIndex >= 0) {
-            return handleMultilineComments(lineContent.substring(commentIndex + 2), false);
+        const endCommentIndex = lineContent.indexOf('*/');
+        if(endCommentIndex >= 0) {
+            docComment += lineContent.substring(0, endCommentIndex + 2);
+            return handleMultilineComments(lineContent.substring(endCommentIndex + 2), false);
+        } else {
+            docComment += lineContent + '\n';
         }
     } else {
         const commentIndex = lineContent.indexOf('/*');
         if(commentIndex >= 0) {
+            docComment = "";
             const endCommentIndex = lineContent.indexOf('*/');
             if(endCommentIndex >= 0) {
+                docComment = lineContent.substring(commentIndex, endCommentIndex + 2);
                 return handleMultilineComments(lineContent.substring(0, commentIndex) + lineContent.substring(endCommentIndex + 2), false);
             } else {
-                return handleMultilineComments(lineContent.substring(0, commentIndex), true);
+                docComment = lineContent.substring(commentIndex) + '\n';
+                return { content: lineContent.substring(0, commentIndex).trim(), inComment: true };
             }
         }
     }
@@ -530,7 +538,8 @@ export function parse(fileUri: Uri, content: string, skipStatic: boolean): Types
                         line: lineIndex,
                         character: matches[0].length
                     },
-                    parameters: params
+                    parameters: params,
+                    documentaton: docComment
                 });
             } else {
                 let tr = readIdentifier(lineContent, 0);
@@ -636,7 +645,8 @@ export function parse(fileUri: Uri, content: string, skipStatic: boolean): Types
                     range: {
                         start: { line: lineIndex, character: 0 },
                         end: { line: lineIndex, character: tr.position }
-                    }
+                    },
+                    documentaton: docComment
                 });
             }
         }
@@ -669,7 +679,8 @@ export function doSignatures(content: string, position: VSCLS.Position, callable
         signatures: [
             {
                 label: callable.label,
-                parameters: callable.parameters
+                parameters: callable.parameters,
+                documentation: callable.documentaton
             }
         ]
     };
@@ -701,13 +712,15 @@ export function doCompletions(
         label: val.identifier,
         detail: val.label,
         kind: val.isConst ? 21 as VSCLS.CompletionItemKind : VSCLS.CompletionItemKind.Variable,
-        insertText: val.identifier[0] === '@' ? val.identifier.substr(1) : val.identifier
+        insertText: val.identifier[0] === '@' ? val.identifier.substr(1) : val.identifier,
+        documentation: val.documentaton
     }))
     .concat(callables.map<VSCLS.CompletionItem>((clb) => ({
         label: clb.identifier,
         detail: clb.label,
         kind: VSCLS.CompletionItemKind.Function,
-        insertText: clb.identifier[0] === '@' ? clb.identifier.substr(1) : clb.identifier
+        insertText: clb.identifier[0] === '@' ? clb.identifier.substr(1) : clb.identifier,
+        documentation: clb.documentaton
     })));
 }
 
@@ -736,10 +749,16 @@ export function doHover(
         }
 
         return {
-            contents: {
-                language: 'amxxpawn',
-                value: callable.label
-            }
+            contents: [
+                {
+                    language: 'amxxpawn',
+                    value: callable.label
+                },
+                {
+                    language: 'pawndoc',
+                    value: callable.documentaton
+                }
+            ]
         };
     } else {
         const index = symbols.values.map((val) => val.identifier).indexOf(result.identifier);
@@ -752,10 +771,16 @@ export function doHover(
         }
 
         return {
-            contents: {
-                language: 'amxxpawn',
-                value: value.label
-            }
+            contents: [
+                {
+                    language: 'amxxpawn',
+                    value: value.label
+                },
+                {
+                    language: 'pawndoc',
+                    value: value.documentaton
+                }
+            ]
         };
     }
 }
