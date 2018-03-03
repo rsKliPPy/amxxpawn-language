@@ -186,8 +186,21 @@ export function compile(outputChannel: VSC.OutputChannel, diagnosticCollection: 
             outputChannel.appendLine('Can\'t access amxxpc. Please check if the path is correct and if you have permissions to execute amxxpc.');
             return;
         }
-        
-        doCompile(executablePath, inputPath, compilerSettings, outputChannel, diagnosticCollection);
+
+        if(editor.document.isDirty === false) {
+            doCompile(executablePath, inputPath, compilerSettings, outputChannel, diagnosticCollection);
+            return;
+        }
+
+        editor.document.save()
+        .then((isSuccess) => {
+            if(isSuccess === false) {
+                outputChannel.appendLine('File save failed.');
+                return;
+            }
+
+            doCompile(executablePath, inputPath, compilerSettings, outputChannel, diagnosticCollection);
+        });
     });
 }
 
