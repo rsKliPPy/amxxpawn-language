@@ -114,9 +114,11 @@ connection.onDefinition((params) => {
 
     const data = documentsData.get(document);
     const location = inclusionLocation(data.resolvedInclusions);
-    if(location === null) { // Try callables/values
-        return Parser.doDefinition(document.getText(), params.position, data, dependenciesData);
+    if(location !== null) {
+        return location;
     }
+
+    return Parser.doDefinition(document.getText(), params.position, data, dependenciesData);
 });
 
 connection.onSignatureHelp((params) => {
