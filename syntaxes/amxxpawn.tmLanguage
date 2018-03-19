@@ -78,7 +78,7 @@
         </dict>
         <dict>
             <key>match</key>
-            <string>(enum)\s+((?:_:\s*)?[A-Za-z_@][A-Za-z0-9_@]*)</string>
+            <string>(enum)\s+((?:_:\s*)?[A-Za-z_@][A-Za-z0-9_@]*)?</string>
             <key>captures</key>
             <dict>
                 <key>1</key>
