@@ -78,7 +78,7 @@
         </dict>
         <dict>
             <key>match</key>
-            <string>(enum)\s+([A-Za-z_$@]\w+)\b</string>
+            <string>(enum)\s+((?:_:\s*)?[A-Za-z_@][A-Za-z0-9_@]*)</string>
             <key>captures</key>
             <dict>
                 <key>1</key>
@@ -95,7 +95,7 @@
         </dict>
         <dict>
             <key>match</key>
-            <string>\b(const|static|stock|public|new|enum|native|forward)\b</string>
+            <string>\b(const|static|stock|public|new|native|forward)\b</string>
             <key>name</key>
             <string>storage.modifier.amxxpawn</string>
         </dict>
