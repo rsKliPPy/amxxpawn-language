@@ -101,7 +101,7 @@
         </dict>
         <dict>
             <key>match</key>
-            <string>\b(true|false|__DATE__|__TIME__|__LINE__|__BINARY_PATH__|__BINARY_NAME__|cellbits|cellmax|cellmin|__Pawn|debug)\b</string>
+            <string>\b(true|false|__DATE__|__TIME__|__LINE__|__FILE__|__BINARY_PATH__|__BINARY_NAME__|__BINARY__|cellbits|cellmax|cellmin|__Pawn|debug)\b</string>
             <key>name</key>
             <string>constant.language.amxxpawn</string>
         </dict>
