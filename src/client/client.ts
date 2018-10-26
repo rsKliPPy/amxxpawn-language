@@ -10,7 +10,7 @@ let diagnosticCollection: VSC.DiagnosticCollection;
 
 export function activate(ctx: VSC.ExtensionContext) {
     const serverModulePath = ctx.asAbsolutePath(Path.join('build', 'server', 'server.js'));
-    const debugOptions = { execArgv: ["--nolazy", "--debug=5858"] };
+    const debugOptions = { execArgv: ['--nolazy', '--inspect=5858'] };
 
     const serverOptions: VSCLC.ServerOptions = {
         run: {
