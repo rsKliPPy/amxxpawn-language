@@ -214,12 +214,15 @@ function handleMultilineComments(lineContent: string, inComment: boolean): { con
     return { content: lineContent.trim(), inComment: inComment };
 }
 
-function handleComments(lineContent: string, inComment: boolean) {
+function handleComments(lineContent, inComment) {
     let commentIndex = lineContent.indexOf('//');
-    if(commentIndex >= 0) {
-        lineContent = lineContent.substring(0, commentIndex).trim();
+    if (commentIndex >= 0) {
+        const matches = lineContent.match(/(".*\/\/.*")/);
+        
+        if (!matches) {
+            lineContent = lineContent.substring(0, commentIndex).trim();
+        }
     }
-
     return handleMultilineComments(lineContent, inComment);
 }
 
