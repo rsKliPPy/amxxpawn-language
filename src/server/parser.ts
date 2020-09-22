@@ -31,7 +31,7 @@ interface IdentifierResults {
 // 2 = tag
 // 3 = identifier
 // 4 = parameters
-const callableRegex = /([\w\s]+?)?([A-Za-z_@][\w_@]+\s*:\s*)?([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
+const callableRegex = /([\w\s]*?)([A-Za-z_@][\w_@]+\s*:\s*)?([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
 
 let docComment = "";
 
@@ -216,10 +216,13 @@ function handleMultilineComments(lineContent: string, inComment: boolean): { con
 
 function handleComments(lineContent: string, inComment: boolean) {
     let commentIndex = lineContent.indexOf('//');
-    if(commentIndex >= 0) {
-        lineContent = lineContent.substring(0, commentIndex).trim();
+    if (commentIndex >= 0) {
+        const matches = lineContent.match(/(".*\/\/.*")/);
+        
+        if (!matches) {
+            lineContent = lineContent.substring(0, commentIndex).trim();
+        }
     }
-
     return handleMultilineComments(lineContent, inComment);
 }
 
@@ -391,10 +394,15 @@ export function parse(fileUri: Uri, content: string, skipStatic: boolean): Types
             return;
         }
 
+        let saved_bracketDepth = bracketDepth;
+
         bracketDepth += handleBracketDepth(lineContent);
-        if(bracketDepth > 0) {
+        
+        if (bracketDepth > 0) {
             // Handle local scope (no implementation yet)
-            return;
+            if (saved_bracketDepth !== 0 || lineContent.indexOf('{') === 0) {
+                return;
+            }
         }
         // Too many closing brackets, find excessive ones and report them
         if(bracketDepth < 0) {
