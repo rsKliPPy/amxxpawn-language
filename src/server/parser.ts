@@ -214,7 +214,7 @@ function handleMultilineComments(lineContent: string, inComment: boolean): { con
     return { content: lineContent.trim(), inComment: inComment };
 }
 
-function handleComments(lineContent, inComment) {
+function handleComments(lineContent: string, inComment: boolean) {
     let commentIndex = lineContent.indexOf('//');
     if (commentIndex >= 0) {
         const matches = lineContent.match(/(".*\/\/.*")/);
