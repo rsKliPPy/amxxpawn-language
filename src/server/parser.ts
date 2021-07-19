@@ -217,7 +217,10 @@ function handleMultilineComments(lineContent: string, inComment: boolean): { con
 function handleComments(lineContent: string, inComment: boolean) {
     let commentIndex = lineContent.indexOf('//');
     if(commentIndex >= 0) {
-        lineContent = lineContent.substring(0, commentIndex).trim();
+        const matches = lineContent.match(/(".*\/\/.*")/);
+        if (!matches) {
+            lineContent = lineContent.substring(0, commentIndex).trim();
+        }
     }
 
     return handleMultilineComments(lineContent, inComment);
