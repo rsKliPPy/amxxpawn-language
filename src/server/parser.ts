@@ -31,7 +31,7 @@ interface IdentifierResults {
 // 2 = tag
 // 3 = identifier
 // 4 = parameters
-const callableRegex = /([\w\s]+?)?([A-Za-z_@][\w_@]+\s*:\s*)?([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
+const callableRegex = /([\w\s]*?)([A-Za-z_@][\w_@]+\s*:\s*)?([A-Za-z_@][\w_@]+)\s*\((.*?)\)/;
 
 let docComment = "";
 
