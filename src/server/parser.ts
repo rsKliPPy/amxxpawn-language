@@ -394,10 +394,13 @@ export function parse(fileUri: Uri, content: string, skipStatic: boolean): Types
             return;
         }
 
+        let saved_bracketDepth = bracketDepth;
+
         bracketDepth += handleBracketDepth(lineContent);
         if(bracketDepth > 0) {
-            // Handle local scope (no implementation yet)
-            return;
+            if(saved_bracketDepth !== 0 || lineContent.indexOf('{') === 0) {
+                return;
+            }
         }
         // Too many closing brackets, find excessive ones and report them
         if(bracketDepth < 0) {
